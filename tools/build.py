@@ -16,6 +16,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--gcc', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--scenario', type=int, choices=range(5), default=0,
+                        help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4故障；不修改UIO')
     args = parser.parse_args()
     gcc = Path(args.gcc).resolve()
     out = Path(args.output).resolve()
@@ -30,7 +32,8 @@ def main():
                 'Libraries/CMSIS/Infineon/XMC4800_series/Include', '.', 'Motor_Control',
                 'Motion_Control', 'ProbeScope', 'Dave/Generated', 'Libraries']
     arch = ['-mfloat-abi=softfp', '-mfpu=fpv4-sp-d16', '-mcpu=cortex-m4', '-mthumb']
-    flags = ['-DXMC4800_F144x2048', '-Os', '-g3', '-ffunction-sections', '-fdata-sections', '-Wall', *arch]
+    flags = ['-DXMC4800_F144x2048', '-DFPGA_SIM_SCENARIO=' + str(args.scenario),
+             '-Os', '-g3', '-ffunction-sections', '-fdata-sections', '-Wall', *arch]
     flags += ['-I' + str(source / name) for name in includes]
     commands = []
     for name in objects:
@@ -59,7 +62,7 @@ def main():
         subprocess.run([str(gcc.parent / ('arm-none-eabi-objcopy' + suffix)), '-O', 'ihex',
                         'xmc4800.elf', 'xmc4800.hex'], cwd=out, stdout=log, stderr=subprocess.STDOUT, check=True)
     inputs = {p.relative_to(source).as_posix(): sha(p) for p in sorted(source.rglob('*')) if p.is_file()}
-    manifest = {'device': 'XMC4800-2048', 'example': 'single-wait-v1', 'inputs': inputs,
+    manifest = {'device': 'XMC4800-2048', 'example': 'expert-logic-model-v2', 'scenario': args.scenario, 'inputs': inputs,
                 'compiler': subprocess.check_output([str(gcc), '--version'], text=True).splitlines()[0],
                 'recipe_sha256': sha(Path(__file__)),
                 'artifacts': {n: sha(out / n) for n in ['xmc4800.elf', 'xmc4800.hex']}}

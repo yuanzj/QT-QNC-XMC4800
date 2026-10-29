@@ -1,6 +1,6 @@
-/* 只接受单个时间等待工步。通信适配参考C15，模拟模型位于独立FpgaSim目录。 */
+/* 现有专家PSET到独立逻辑工具模型的适配；保留真实SDO/PDO，不操作实际FPGA或电机。 */
 #include "ethercat_adapter.h"
-#include "../FpgaSim/fpga_sim.h"
+#include "native_pset.h"
 
 extern uint32_t HW_GetTimer(void);
 extern uint8_t Pset_buffer0x2030[];
@@ -14,19 +14,17 @@ extern uint32_t status_code20x2201;
 extern uint16_t pset_echo0x220B;
 extern uint8_t step_echo0x220C;
 extern uint8_t step_result0x220D;
+extern int16_t Torque_actual_value0x6077;
+extern int32_t Position_actual_value0x6064;
+extern int32_t Velocity_actual_value0x606C;
 
-static FpgaSim simulator;
+static FpgaProgramRun simulator;
+static FpgaProgram decoded_program;
 static volatile uint16_t pending_length;
 static volatile uint8_t received;
-static uint8_t pset_no;
 static uint8_t valid_task;
 static uint8_t clock_started;
 static uint32_t last_ms;
-
-static uint16_t read_u16(const uint8_t *p)
-{
-    return (uint16_t)((uint16_t)p[0] | ((uint16_t)p[1] << 8));
-}
 
 void Simulation_Receive(uint16_t length)
 {
@@ -54,20 +52,12 @@ uint32_t Simulation_Crc32(const uint8_t *bytes, uint16_t length)
 
 static void load_task(void)
 {
-    const uint8_t *p = Pset_buffer0x2030;
-    uint16_t duration;
-    uint16_t maximum;
     valid_task = 0;
-    pset_no = 0;
-    FpgaSim_Reset(&simulator);
-    status_code0x2200 = 1; /* 测试固件参数不支持，不能冒充已执行。 */
-    if (pending_length != 16 || p[0] == 0 || p[1] != 2 || p[2] != 1 ||
-        p[3] != 4 || read_u16(p + 4) != 13 || p[6] != 0 ||
-        p[9] != 0 || p[10] != 0 || p[13] != 0 || p[14] != 0 || p[15] != 2) return;
-    duration = read_u16(p + 7);
-    maximum = read_u16(p + 11);
-    if (maximum < duration || !FpgaSim_LoadWait(&simulator, duration)) return;
-    pset_no = p[0];
+    if (!NativePset_Decode(Pset_buffer0x2030, pending_length, &decoded_program) ||
+        !FpgaProgram_Load(&simulator, &decoded_program)) {
+        status_code0x2200 = 1;
+        return;
+    }
     valid_task = 1;
     status_code0x2200 = 0;
 }
@@ -88,29 +78,32 @@ void Simulation_Tick(void)
     command = App_JobCtrl_GetControl();
     if (command) App_JobCtrl_SetControl(0);
     if (command == 3) {
-        FpgaSim_Reset(&simulator);
+        FpgaProgram_Reset(&simulator);
         valid_task = 0;
-        pset_no = 0;
         status_code0x2200 = 0;
     } else if (command == 2) {
-        FpgaSim_Stop(&simulator);
+        FpgaProgram_Stop(&simulator);
     } else if (command == 1) {
-        if (!valid_task || App_JobCtrl_GetPsetNo() != pset_no ||
-            !FpgaSim_Start(&simulator, now, permitted)) status_code0x2200 = 1;
+        if (!valid_task || simulator.program.count == 0 || App_JobCtrl_GetPsetNo() != simulator.program.pset_no ||
+            !FpgaProgram_Start(&simulator, now, permitted)) status_code0x2200 = 1;
+        else status_code0x2200 = 0;
     } else if (command != 0) {
         status_code0x2200 = 1;
     }
-    FpgaSim_Tick(&simulator, now, permitted);
-    if (simulator.state == FPGA_SIM_FAULT) status_code0x2200 = 3;
+    FpgaProgram_Tick(&simulator, now, permitted);
+    if (simulator.state == FPGA_SIM_FAULT) status_code0x2200 = simulator.fault_code;
     status_code20x2201 = 0;
     if (simulator.state == FPGA_SIM_RUNNING) {
-        pset_echo0x220B = (uint16_t)(((uint16_t)pset_no << 8) | 1u);
-        step_echo0x220C = 1;
+        pset_echo0x220B = (uint16_t)(((uint16_t)simulator.program.pset_no << 8) | simulator.current_step);
+        step_echo0x220C = simulator.current_step;
     } else {
         uint8_t finished = simulator.state == FPGA_SIM_DONE ||
                            simulator.state == FPGA_SIM_STOPPED || simulator.state == FPGA_SIM_FAULT;
-        pset_echo0x220B = finished ? (uint16_t)((uint16_t)pset_no << 8) : 0;
+        pset_echo0x220B = finished ? (uint16_t)((uint16_t)simulator.program.pset_no << 8) : 0;
         step_echo0x220C = 0;
     }
     step_result0x220D = simulator.result;
+    Torque_actual_value0x6077 = simulator.torque_raw;
+    Position_actual_value0x6064 = simulator.position_inc;
+    Velocity_actual_value0x606C = simulator.velocity_inc_s;
 }

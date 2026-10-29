@@ -1,7 +1,7 @@
 {
   "origin_tag": "customer-original-20261018",
   "origin_commit": "a43970066b5655fcf0f402e1f454574eaf5a73fa",
-  "note": "原始Release构建顺序81项，加独立模拟与适配2项；不读取DAVE构建缓存。",
+  "note": "原始81项，加隔离等待模型/适配和专家模型/解码4项；不读取DAVE缓存。",
   "objects": [
     "Startup/startup_XMC4800.o",
     "Startup/system_XMC4800.o",
@@ -85,6 +85,8 @@
     "Dave/Generated/DAVE.o",
     "main.o",
     "FpgaSim/fpga_sim.o",
-    "Simulation/ethercat_adapter.o"
+    "Simulation/ethercat_adapter.o",
+    "FpgaSim/fpga_program.o",
+    "Simulation/native_pset.o"
   ]
 }
