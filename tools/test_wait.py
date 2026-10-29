@@ -32,6 +32,12 @@ def main():
                    'path': path, 'http': response.status, 'body': raw.decode('utf-8')}
         rows.append(row)
         (evidence / 'http.ndjson').write_text('\n'.join(json.dumps(r, ensure_ascii=False) for r in rows) + '\n', encoding='utf-8')
+        if method == 'POST':
+            if row['http'] != 202 or raw != b'xmc job accepted\n':
+                raise ValueError('UIO没有按约定受理任务')
+            return {'accepted': True}
+        if row['http'] != 200:
+            raise ValueError('UIO读取状态失败')
         return json.loads(raw)
     baseline = request('/api/status')
     if baseline['ecat_state'] != 5 or baseline['ecat_wkc'] != baseline['ecat_expected_wkc']:
