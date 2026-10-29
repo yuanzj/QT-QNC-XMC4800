@@ -1,7 +1,7 @@
 /Debug/
-/Debug/
-
+/Release/
 /build/
 /evidence/
 __pycache__/
 *.pyc
+*.local.launch

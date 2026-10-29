@@ -1,10 +1,9 @@
-"""Windows/macOS标准库构建入口：读取客户对象顺序，新增两个隔离模块，不执行旧Makefile。"""
+"""Windows/macOS标准库构建入口：使用固定源码清单，不依赖IDE生成的构建缓存。"""
 import argparse
 import concurrent.futures
 import hashlib
 import json
 from pathlib import Path
-import re
 import shutil
 import subprocess
 
@@ -23,14 +22,9 @@ def main():
     if out.exists(): raise SystemExit('输出已存在，拒绝覆盖')
     out.mkdir(parents=True)
     source = out / 'source'
-    shutil.copytree(ROOT, source, ignore=shutil.ignore_patterns('.git', 'build', 'evidence', '__pycache__'))
-    objects = []
-    graph = (source / 'Release/makefile').read_text(errors='replace')
-    for include in re.findall(r'^-include ([^\s]+\.mk)$', graph, re.M):
-        path = source / 'Release' / include
-        if path.exists():
-            objects += re.findall(r'^\./([^\s]+\.o)\s*\\?\s*$', path.read_text(errors='replace'), re.M)
-    objects += ['FpgaSim/fpga_sim.o', 'Simulation/ethercat_adapter.o']
+    shutil.copytree(ROOT, source, ignore=shutil.ignore_patterns('.git', 'build', 'evidence', 'Debug', 'Release', '__pycache__'))
+    recipe = json.loads((source / 'tools/source-list.json').read_text(encoding='utf-8'))
+    objects = recipe['objects']
     assert len(objects) == len(set(objects))
     includes = ['Libraries/XMCLib/inc', 'Servo_CiA402', 'Libraries/CMSIS/Include',
                 'Libraries/CMSIS/Infineon/XMC4800_series/Include', '.', 'Motor_Control',
