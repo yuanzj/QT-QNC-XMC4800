@@ -34,7 +34,7 @@
   <intAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerSwoPortNumber" value="2332" />
   <intAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerTelnetPortNumber" value="2333" />
   <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.interfaceSpeed" value="1000" />
-  <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.otherInitCommands" value="monitor halt&#13;&#10;hbreak FpgaSim_Tick" />
+  <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.otherInitCommands" value="monitor halt&#13;&#10;hbreak Simulation_Tick" />
   <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.otherRunCommands" value="" />
   <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.secondResetType" value="" />
   <intAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.swoEnableTargetCpuFreq" value="0" />

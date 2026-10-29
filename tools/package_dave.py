@@ -35,7 +35,8 @@ def main():
     if sha(ihex) != sha(out / 'xmc4800.hex'): raise ValueError('IDE HEX与ELF重新导出不一致')
     shutil.copytree(native, out / 'native-build')
     source = out / 'source'
-    manifest = {'device': 'XMC4800-2048', 'example': 'single-wait-v1', 'origin': 'DAVE-4.5.0/' + args.configuration,
+    manifest = {'device': 'XMC4800-2048', 'example': 'expert-logic-model-v2',
+                'origin': 'DAVE-4.5.0/' + args.configuration,
                 'compiler': subprocess.check_output([str(gcc), '--version'], text=True).splitlines()[0],
                 'inputs': {f.relative_to(source).as_posix(): sha(f) for f in sorted(source.rglob('*')) if f.is_file()},
                 'artifacts': {n: sha(out / n) for n in ['xmc4800.elf', 'xmc4800.hex']}}
