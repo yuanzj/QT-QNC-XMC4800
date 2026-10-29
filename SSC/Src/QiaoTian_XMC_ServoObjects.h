@@ -24,6 +24,7 @@
 /******************************************************************************
 *                    Object 0x1600 : RxPDO1 CSP/CSV
 ******************************************************************************/
+
 /**
 * \addtogroup 0x1600 0x1600 | RxPDO1 CSP/CSV
 * @{
@@ -34,38 +35,23 @@
 * \brief Object entry descriptions<br>
 * <br>
 * SubIndex 0<br>
-* SubIndex 1 - Control Word<br>
-* SubIndex 2 - Target Position<br>
-* SubIndex 3 - Target Velocity<br>
-* SubIndex 4 - Profile_velocity<br>
-* SubIndex 5 - Profile_acceleration<br>
-* SubIndex 6 - Profile_deceleration<br>
-* SubIndex 7 - Modes of Operation<br>
-* SubIndex 8<br>
+* SubIndex 1 - mapped entry 0x20010020<br>
+* SubIndex 2 - mapped entry 0x00000020<br>
+* SubIndex 3 - mapped entry 0x00000020<br>
 */
 OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x1600[] = {
-{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex1 - Control Word */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex2 - Target Position */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex3 - Target Velocity */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex4 - Profile_velocity */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex5 - Profile_acceleration */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex6 - Profile_deceleration */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex7 - Modes of Operation */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* Subindex8 */
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x20010020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* 0x00000020 */
 
 /**
 * \brief Object/Entry names
 */
 OBJCONST UCHAR OBJMEM aName0x1600[] = "RxPDO1 CSP/CSV\000"
-"Control Word\000"
-"Target Position\000"
-"Target Velocity\000"
-"Profile_velocity\000"
-"Profile_acceleration\000"
-"Profile_deceleration\000"
-"Modes of Operation\000"
-"SubIndex 005\000\377";
+"SubIndex 001\000"
+"SubIndex 002\000"
+"SubIndex 003\000\377";
 #endif //#ifdef _OBJD_
 
 #ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
@@ -74,14 +60,9 @@ OBJCONST UCHAR OBJMEM aName0x1600[] = "RxPDO1 CSP/CSV\000"
 */
 typedef struct OBJ_STRUCT_PACKED_START {
 UINT16 u16SubIndex0;
-UINT32 SI1; /* Subindex1 -  */
-UINT32 SI2; /* Subindex2 -  */
-UINT32 SI3; /* Subindex3 -  */
-UINT32 SI4; /* Subindex4 -  */
-UINT32 SI5; /* Subindex5 -  */
-UINT32 SI6; /* Subindex6 -  */
-UINT32 SI7; /* Subindex7 -  */
-UINT32 SI8; /* Subindex8 -  */
+UINT32 SI1; /* Subindex1 */
+UINT32 SI2; /* Subindex2 */
+UINT32 SI3; /* Subindex3 */
 } OBJ_STRUCT_PACKED_END
 TOBJ1600;
 #endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
@@ -91,12 +72,10 @@ TOBJ1600;
 */
 PROTO TOBJ1600 RxPDO1CSPCSV0x1600
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={8,0x60400010,0x607A0020,0x60FF0020,0x60810020,0x60830020,0x60840020,0x60600008,0x00000008}
+={3,0x20010020,0x00000020,0x00000020}
 #endif
 ;
 /** @}*/
-
-
 
 /******************************************************************************
 *                    Object 0x1601 : RxPDO2 PP
@@ -221,47 +200,66 @@ PROTO TOBJ1602 RxPDO3PT0x1602
 
 
 /******************************************************************************
-*                    Object 0x1A00 : TxPDO1 CSP/CSV
+*                    Object 0x1A00 : TxPDO 40B
 ******************************************************************************/
+
 /**
-* \addtogroup 0x1A00 0x1A00 | TxPDO1 CSP/CSV
+* \addtogroup 0x1A00 0x1A00 | TxPDO 40B
 * @{
-* \brief Object 0x1A00 (TxPDO1 CSP/CSV) definition
+* \brief Object 0x1A00 (TxPDO 40B) definition
 */
 #ifdef _OBJD_
 /**
 * \brief Object entry descriptions<br>
 * <br>
 * SubIndex 0<br>
-* SubIndex 1 - Status Word<br>
-* SubIndex 2 - Error Code<br>
-* SubIndex 3 - Actual Position<br>
-* SubIndex 4 - Actual Velocity<br>
-* SubIndex 5 - Torque_actual_value<br>
-* SubIndex 6 - Modes of operation display<br>
-* SubIndex 7<br>
+* SubIndex 1 - mapped entry 0x22000020<br>
+* SubIndex 2 - mapped entry 0x22010020<br>
+* SubIndex 3 - mapped entry 0x60770010<br>
+* SubIndex 4 - mapped entry 0x60410010<br>
+* SubIndex 5 - mapped entry 0x60640020<br>
+* SubIndex 6 - mapped entry 0x606C0020<br>
+* SubIndex 7 - mapped entry 0x220B0010<br>
+* SubIndex 8 - mapped entry 0x220C0008<br>
+* SubIndex 9 - mapped entry 0x220D0008<br>
+* SubIndex 10 - mapped entry 0x22080020<br>
+* SubIndex 11 - mapped entry 0x00000020<br>
+* SubIndex 12 - mapped entry 0x00000020<br>
+* SubIndex 13 - mapped entry 0x00000020<br>
 */
 OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x1A00[] = {
-{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex1 - Status Word */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex2 - Error Code */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex3 - Actual Position */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex4 - Actual Velocity */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex5 - Torque_actual_value */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* Subindex6 - Modes of operation display */
-{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* Subindex7 */
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22010020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60770010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60410010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60640020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x606C0020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220B0010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220C0008 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220D0008 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22080020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* 0x00000020 */
 
 /**
 * \brief Object/Entry names
 */
-OBJCONST UCHAR OBJMEM aName0x1A00[] = "TxPDO1 CSP/CSV\000"
-"Status Word\000"
-"Error Code\000"
-"Actual Position\000"
-"Actual Velocity\000"
-"Torque_actual_value\000"
-"Modes of operation display\000"
-"SubIndex 007\000\377";
+OBJCONST UCHAR OBJMEM aName0x1A00[] = "TxPDO 40B\000"
+"SubIndex 001\000"
+"SubIndex 002\000"
+"SubIndex 003\000"
+"SubIndex 004\000"
+"SubIndex 005\000"
+"SubIndex 006\000"
+"SubIndex 007\000"
+"SubIndex 008\000"
+"SubIndex 009\000"
+"SubIndex 010\000"
+"SubIndex 011\000"
+"SubIndex 012\000"
+"SubIndex 013\000\377";
 #endif //#ifdef _OBJD_
 
 #ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
@@ -270,13 +268,19 @@ OBJCONST UCHAR OBJMEM aName0x1A00[] = "TxPDO1 CSP/CSV\000"
 */
 typedef struct OBJ_STRUCT_PACKED_START {
 UINT16 u16SubIndex0;
-UINT32 SI1; /* Subindex1 -  */
-UINT32 SI2; /* Subindex2 -  */
-UINT32 SI3; /* Subindex3 -  */
-UINT32 SI4; /* Subindex4 -  */
-UINT32 SI5; /* Subindex5 -  */
-UINT32 SI6; /* Subindex6 -  */
-UINT32 SI7; /* Subindex7 -  */
+UINT32 SI1; /* Subindex1 */
+UINT32 SI2; /* Subindex2 */
+UINT32 SI3; /* Subindex3 */
+UINT32 SI4; /* Subindex4 */
+UINT32 SI5; /* Subindex5 */
+UINT32 SI6; /* Subindex6 */
+UINT32 SI7; /* Subindex7 */
+UINT32 SI8; /* Subindex8 */
+UINT32 SI9; /* Subindex9 */
+UINT32 SI10; /* Subindex10 */
+UINT32 SI11; /* Subindex11 */
+UINT32 SI12; /* Subindex12 */
+UINT32 SI13; /* Subindex13 */
 } OBJ_STRUCT_PACKED_END
 TOBJ1A00;
 #endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
@@ -286,12 +290,10 @@ TOBJ1A00;
 */
 PROTO TOBJ1A00 TxPDO1CSPCSV0x1A00
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={7,0x60410010,0x603F0010,0x60640020,0x606C0020,0x60770010,0x60610008,0x00000008}
+={13,0x22000020,0x22010020,0x60770010,0x60410010,0x60640020,0x606C0020,0x220B0010,0x220C0008,0x220D0008,0x22080020,0x00000020,0x00000020,0x00000020}
 #endif
 ;
 /** @}*/
-
-
 
 /******************************************************************************
 *                    Object 0x1A01 : TxPDO2 PP
@@ -473,7 +475,7 @@ TOBJ1C12;
 */
 PROTO TOBJ1C12 sRxPDOassign
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={3,{0x1600,0x1601,0x1602}}
+={1,{0x1600,0x0000,0x0000}}
 #endif
 ;
 /** @}*/
@@ -522,12 +524,62 @@ TOBJ1C13;
 */
 PROTO TOBJ1C13 sTxPDOassign
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={3,{0x1A00,0x1A01,0x1A02}}
+={1,{0x1A00,0x0000,0x0000}}
 #endif
 ;
 /** @}*/
 
 
+
+/******************************************************************************
+*                    Object 0x2039 : pset_crc32
+******************************************************************************/
+/**
+* \addtogroup 0x2039 0x2039 | pset_crc32
+* @{
+* \brief Object 0x2039 (pset_crc32) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2039 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2039[] = "pset_crc32\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT32 Pset_CRC32_0x2039;
+/** @}*/
+
+/******************************************************************************
+*                    Object 0x203A : pset_length
+******************************************************************************/
+/**
+* \addtogroup 0x203A 0x203A | pset_length
+* @{
+* \brief Object 0x203A (pset_length) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x203A = { DEFTYPE_UNSIGNED16 , 0x10 , ACCESS_READ };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x203A[] = "pset_length\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT16 Pset_Length_0x203A;
+/** @}*/
 
 /******************************************************************************
 *                    Object 0x203F : Fault_Code
@@ -719,58 +771,281 @@ PROTO INT16 Pos_Loop_Kp0x2100;
 
 
 /******************************************************************************
-*                    Object 0x2200 : Spd_Loop_Kp
+*                    Object 0x2200 : status_code
 ******************************************************************************/
+
 /**
-* \addtogroup 0x2200 0x2200 | Spd_Loop_Kp
+* \addtogroup 0x2200 0x2200 | status_code
 * @{
-* \brief Object 0x2200 (Spd_Loop_Kp) definition
+* \brief Object 0x2200 (status_code) definition
 */
 #ifdef _OBJD_
 /**
 * \brief Entry description
 */
-OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2200 = { DEFTYPE_INTEGER16 , 0x10 , ACCESS_READWRITE | OBJACCESS_RXPDOMAPPING };
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2200 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
 /**
 * \brief Object name
 */
-OBJCONST UCHAR OBJMEM aName0x2200[] = "Spd_Loop_Kp\000\377";
+OBJCONST UCHAR OBJMEM aName0x2200[] = "status_code\000\377";
 #endif //#ifdef _OBJD_
 
 /**
 * \brief Object variable
 */
-PROTO INT16 Spd_Loop_Kp0x2200;
+PROTO UINT32 status_code0x2200;
+/** @}*/
+
+/******************************************************************************
+*                    Object 0x2201 : status_code2
+******************************************************************************/
+
+/**
+* \addtogroup 0x2201 0x2201 | status_code2
+* @{
+* \brief Object 0x2201 (status_code2) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2201 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2201[] = "status_code2\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT32 status_code20x2201;
+/** @}*/
+
+/******************************************************************************
+*                    Object 0x2202 : status_code
+******************************************************************************/
+/**
+* \addtogroup 0x2202 0x2202 | status_code
+* @{
+* \brief Object 0x2202 (status_code) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2202 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2202[] = "status_code\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT32 status_code0x2202;
+/** @}*/
+/******************************************************************************
+*                    Object 0x2203 : fail_code
+******************************************************************************/
+/**
+* \addtogroup 0x2203 0x2203 | fail_code
+* @{
+* \brief Object 0x2203 (fail_code) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2203 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2203[] = "fail_code\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT32 fail_code0x2203;
+/** @}*/
+/******************************************************************************
+*                    Object 0x2208 : current_sample
+******************************************************************************/
+/**
+* \addtogroup 0x2208 0x2208 | current_sample
+* @{
+* \brief Object 0x2208 (current_sample) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2208 = { DEFTYPE_INTEGER32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2208[] = "current_sample\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO INT32 current_sample0x2208;
+/** @}*/
+/******************************************************************************
+*                    Object 0x2209 : temperature_sample
+******************************************************************************/
+/**
+* \addtogroup 0x2209 0x2209 | temperature_sample
+* @{
+* \brief Object 0x2209 (temperature_sample) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2209 = { DEFTYPE_INTEGER32 , 0x20 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2209[] = "temperature_sample\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO INT32 temperature_sample0x2209;
+/** @}*/
+/******************************************************************************
+*                    Object 0x220B : pset_echo
+******************************************************************************/
+
+/**
+* \addtogroup 0x220B 0x220B | pset_echo
+* @{
+* \brief Object 0x220B (pset_echo) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x220B = { DEFTYPE_UNSIGNED16 , 0x10 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x220B[] = "pset_echo\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT16 pset_echo0x220B;
+/** @}*/
+
+/******************************************************************************
+*                    Object 0x220C : step_echo
+******************************************************************************/
+/**
+* \addtogroup 0x220C 0x220C | step_echo
+* @{
+* \brief Object 0x220C (step_echo) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x220C = { DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x220C[] = "step_echo\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT8 step_echo0x220C;
+/** @}*/
+/******************************************************************************
+*                    Object 0x220D : step_result
+******************************************************************************/
+/**
+* \addtogroup 0x220D 0x220D | step_result
+* @{
+* \brief Object 0x220D (step_result) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x220D = { DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x220D[] = "step_result\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT8 step_result0x220D;
 /** @}*/
 
 
 
 /******************************************************************************
-*                    Object 0x2201 : Spd_Loop_Ti
+*                    Object 0x2210 : Spd_Loop_Kp
 ******************************************************************************/
+
 /**
-* \addtogroup 0x2201 0x2201 | Spd_Loop_Ti
+* \addtogroup 0x2210 0x2210 | Spd_Loop_Kp
 * @{
-* \brief Object 0x2201 (Spd_Loop_Ti) definition
+* \brief Object 0x2210 (Spd_Loop_Kp) definition
 */
 #ifdef _OBJD_
 /**
 * \brief Entry description
 */
-OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2201 = { DEFTYPE_INTEGER16 , 0x10 , ACCESS_READWRITE | OBJACCESS_RXPDOMAPPING };
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2210 = { DEFTYPE_INTEGER16 , 0x10 , ACCESS_READWRITE | OBJACCESS_RXPDOMAPPING };
 /**
 * \brief Object name
 */
-OBJCONST UCHAR OBJMEM aName0x2201[] = "Spd_Loop_Ti\000\377";
+OBJCONST UCHAR OBJMEM aName0x2210[] = "Spd_Loop_Kp\000\377";
 #endif //#ifdef _OBJD_
 
 /**
 * \brief Object variable
 */
-PROTO INT16 Spd_Loop_Ti0x2201;
+PROTO INT16 Spd_Loop_Kp0x2210;
 /** @}*/
 
+/******************************************************************************
+*                    Object 0x2211 : Spd_Loop_Ti
+******************************************************************************/
 
+/**
+* \addtogroup 0x2211 0x2211 | Spd_Loop_Ti
+* @{
+* \brief Object 0x2211 (Spd_Loop_Ti) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2211 = { DEFTYPE_INTEGER16 , 0x10 , ACCESS_READWRITE | OBJACCESS_RXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2211[] = "Spd_Loop_Ti\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO INT16 Spd_Loop_Ti0x2211;
+/** @}*/
 
 /******************************************************************************
 *                    Object 0x2300 : Cur_Loop_IqKp
@@ -2252,7 +2527,7 @@ TOBJ608F;
 */
 PROTO TOBJ608F Position_encoder_resolution0x608F
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={2,0,0}
+={2,8388608,1}
 #endif
 ;
 /** @}*/
@@ -2305,7 +2580,7 @@ TOBJ6091;
 */
 PROTO TOBJ6091 Gear_ratio0x6091
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={2,0,0}
+={2,30,1}
 #endif
 ;
 /** @}*/
@@ -2840,25 +3115,836 @@ PROTO TOBJF000 ModularDeviceProfile0xF000
 
 
 
+/* TODO(OPEN-2): 0x2000 按 docx 表 5-1（12 sub / 51 B）实现；xlsx 另一套字段未采用 */
+/* TODO(OPEN-5): 0x2000/0x2010/0x2020-0x2024/0x2030/0x2031/0x2032 索引为本方分配；0x2002 遥测
+   注意：0x2001 按 Architect 复核（B1 未确认）不定义任何东西，留空 */
+
+/******************************************************************************
+*                    Object 0x2000 : Tool_Spec
+******************************************************************************/
+
+/**
+* \addtogroup 0x2000 0x2000 | Tool_Spec
+* @{
+* \brief Object 0x2000 (Tool_Spec) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - tool_sn<br>
+* SubIndex 2 - model<br>
+* SubIndex 3 - max_torque<br>
+* SubIndex 4 - max_speed<br>
+* SubIndex 5 - max_temp<br>
+* SubIndex 6 - maintenance<br>
+* SubIndex 7 - service_interval<br>
+* SubIndex 8 - used_life<br>
+* SubIndex 9 - max_life<br>
+* SubIndex 10 - torque_cal<br>
+* SubIndex 11 - reserved1<br>
+* SubIndex 12 - reserved2<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2000[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_OCTETSTRING , 0x80 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2000[] = "Tool_Spec\000"
+"tool_sn\000"
+"model\000"
+"max_torque\000"
+"max_speed\000"
+"max_temp\000"
+"maintenance\000"
+"service_interval\000"
+"used_life\000"
+"max_life\000"
+"torque_cal\000"
+"reserved1\000"
+"reserved2\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 tool_sn[16]; /* Subindex1 - tool_sn */
+UINT8 model; /* Subindex2 - model */
+UINT32 max_torque; /* Subindex3 - max_torque */
+UINT32 max_speed; /* Subindex4 - max_speed */
+UINT8 max_temp; /* Subindex5 - max_temp */
+UINT8 maintenance; /* Subindex6 - maintenance */
+UINT32 service_interval; /* Subindex7 - service_interval */
+UINT32 used_life; /* Subindex8 - used_life */
+UINT32 max_life; /* Subindex9 - max_life */
+UINT32 torque_cal; /* Subindex10 - torque_cal */
+UINT32 reserved1; /* Subindex11 - reserved1 */
+UINT32 reserved2; /* Subindex12 - reserved2 */
+} OBJ_STRUCT_PACKED_END
+TOBJ2000;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2000 Tool_Spec0x2000
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={12,"QIAOTIAN-TW-0001",1,30000,500000,60,0,1000000,0,5000000,1000,0,0}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2001 : Controller_Status
+******************************************************************************/
+
+/**
+* \addtogroup 0x2001 0x2001 | Controller_Status
+* @{
+* \brief Object 0x2001 (Controller_Status) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2001 = { DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE | OBJACCESS_RXPDOMAPPING };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2001[] = "Controller_Status\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable
+*/
+PROTO UINT32 controller_status0x2001;
+/** @}*/
+
+/******************************************************************************
+*                    Object 0x2002 : Telemetry
+******************************************************************************/
+
+/**
+* \addtogroup 0x2002 0x2002 | Telemetry
+* @{
+* \brief Object 0x2002 (Telemetry) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - current<br>
+* SubIndex 2 - temperature<br>
+* SubIndex 3 - bus_voltage<br>
+* SubIndex 4 - sto_state<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2002[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2002[] = "Telemetry\000"
+"current\000"
+"temperature\000"
+"bus_voltage\000"
+"sto_state\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+INT32 current; /* Subindex1 - current */
+INT32 temperature; /* Subindex2 - temperature */
+UINT32 bus_voltage; /* Subindex3 - bus_voltage */
+UINT8 sto_state; /* Subindex4 - sto_state */
+} OBJ_STRUCT_PACKED_END
+TOBJ2002;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2002 Telemetry0x2002
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={4,0,24500,48000,0}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2010 : Maintenance_Cal
+******************************************************************************/
+
+/**
+* \addtogroup 0x2010 0x2010 | Maintenance_Cal
+* @{
+* \brief Object 0x2010 (Maintenance_Cal) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - maintenance<br>
+* SubIndex 2 - torque_cal<br>
+* SubIndex 3 - reserved1<br>
+* SubIndex 4 - reserved2<br>
+* SubIndex 5 - reserved3<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2010[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2010[] = "Maintenance_Cal\000"
+"maintenance\000"
+"torque_cal\000"
+"reserved1\000"
+"reserved2\000"
+"reserved3\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 maintenance; /* Subindex1 - maintenance */
+UINT32 torque_cal; /* Subindex2 - torque_cal */
+UINT32 reserved1; /* Subindex3 - reserved1 */
+UINT32 reserved2; /* Subindex4 - reserved2 */
+UINT32 reserved3; /* Subindex5 - reserved3 */
+} OBJ_STRUCT_PACKED_END
+TOBJ2010;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2010 Maintenance_Cal0x2010
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={5,0,1000,0,0,0}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2020 : Socket_Identify
+******************************************************************************/
+
+/**
+* \addtogroup 0x2020 0x2020 | Socket_Identify
+* @{
+* \brief Object 0x2020 (Socket_Identify) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - stop_torque<br>
+* SubIndex 2 - rotate_angle<br>
+* SubIndex 3 - repeat_delay_ms<br>
+* SubIndex 4 - repeat_count<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2020[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2020[] = "Socket_Identify\000"
+"stop_torque\000"
+"rotate_angle\000"
+"repeat_delay_ms\000"
+"repeat_count\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+INT32 stop_torque; /* Subindex1 - stop_torque */
+INT32 rotate_angle; /* Subindex2 - rotate_angle */
+UINT32 repeat_delay_ms; /* Subindex3 - repeat_delay_ms */
+UINT8 repeat_count; /* Subindex4 - repeat_count */
+} OBJ_STRUCT_PACKED_END
+TOBJ2020;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2020 Socket_Identify0x2020
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={4,1500,3000,100,1}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2021 : Rundown
+******************************************************************************/
+
+/**
+* \addtogroup 0x2021 0x2021 | Rundown
+* @{
+* \brief Object 0x2021 (Rundown) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - mode<br>
+* SubIndex 2 - target_angle<br>
+* SubIndex 3 - angle_threshold<br>
+* SubIndex 4 - target_torque<br>
+* SubIndex 5 - safe_torque<br>
+* SubIndex 6 - safe_angle<br>
+* SubIndex 7 - angle_reset<br>
+* SubIndex 8 - torque_reset<br>
+* SubIndex 9 - auto_adjust<br>
+* SubIndex 10 - speed_adjust_ratio<br>
+* SubIndex 11 - auto_sensitivity<br>
+* SubIndex 12 - target_brake_ratio<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2021[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2021[] = "Rundown\000"
+"mode\000"
+"target_angle\000"
+"angle_threshold\000"
+"target_torque\000"
+"safe_torque\000"
+"safe_angle\000"
+"angle_reset\000"
+"torque_reset\000"
+"auto_adjust\000"
+"speed_adjust_ratio\000"
+"auto_sensitivity\000"
+"target_brake_ratio\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 mode; /* Subindex1 - mode */
+INT32 target_angle; /* Subindex2 - target_angle */
+INT32 angle_threshold; /* Subindex3 - angle_threshold */
+INT32 target_torque; /* Subindex4 - target_torque */
+INT32 safe_torque; /* Subindex5 - safe_torque */
+INT32 safe_angle; /* Subindex6 - safe_angle */
+UINT8 angle_reset; /* Subindex7 - angle_reset */
+UINT8 torque_reset; /* Subindex8 - torque_reset */
+UINT8 auto_adjust; /* Subindex9 - auto_adjust */
+UINT32 speed_adjust_ratio; /* Subindex10 - speed_adjust_ratio */
+UINT32 auto_sensitivity; /* Subindex11 - auto_sensitivity */
+UINT32 target_brake_ratio; /* Subindex12 - target_brake_ratio */
+} OBJ_STRUCT_PACKED_END
+TOBJ2021;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2021 Rundown0x2021
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={12,1,180000,1500,1500,1500,360000,1,1,0,500,1000,990}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2022 : Snug
+******************************************************************************/
+
+/**
+* \addtogroup 0x2022 0x2022 | Snug
+* @{
+* \brief Object 0x2022 (Snug) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - strategy<br>
+* SubIndex 2 - target_torque<br>
+* SubIndex 3 - max_torque<br>
+* SubIndex 4 - min_torque<br>
+* SubIndex 5 - angle_threshold<br>
+* SubIndex 6 - min_angle<br>
+* SubIndex 7 - max_angle<br>
+* SubIndex 8 - safe_angle<br>
+* SubIndex 9 - safe_torque<br>
+* SubIndex 10 - target_angle<br>
+* SubIndex 11 - start_torque<br>
+* SubIndex 12 - torque_value_mode<br>
+* SubIndex 13 - angle_value_mode<br>
+* SubIndex 14 - angle_reset<br>
+* SubIndex 15 - torque_reset<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2022[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2022[] = "Snug\000"
+"strategy\000"
+"target_torque\000"
+"max_torque\000"
+"min_torque\000"
+"angle_threshold\000"
+"min_angle\000"
+"max_angle\000"
+"safe_angle\000"
+"safe_torque\000"
+"target_angle\000"
+"start_torque\000"
+"torque_value_mode\000"
+"angle_value_mode\000"
+"angle_reset\000"
+"torque_reset\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 strategy; /* Subindex1 - strategy */
+INT32 target_torque; /* Subindex2 - target_torque */
+INT32 max_torque; /* Subindex3 - max_torque */
+INT32 min_torque; /* Subindex4 - min_torque */
+INT32 angle_threshold; /* Subindex5 - angle_threshold */
+INT32 min_angle; /* Subindex6 - min_angle */
+INT32 max_angle; /* Subindex7 - max_angle */
+INT32 safe_angle; /* Subindex8 - safe_angle */
+INT32 safe_torque; /* Subindex9 - safe_torque */
+INT32 target_angle; /* Subindex10 - target_angle */
+INT32 start_torque; /* Subindex11 - start_torque */
+UINT8 torque_value_mode; /* Subindex12 - torque_value_mode */
+UINT8 angle_value_mode; /* Subindex13 - angle_value_mode */
+UINT8 angle_reset; /* Subindex14 - angle_reset */
+UINT8 torque_reset; /* Subindex15 - torque_reset */
+} OBJ_STRUCT_PACKED_END
+TOBJ2022;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2022 Snug0x2022
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={15,0,15000,30000,0,1500,10000,20000,100000,30000,15000,1000,0,1,1,1}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2023 : Loosen
+******************************************************************************/
+
+/**
+* \addtogroup 0x2023 0x2023 | Loosen
+* @{
+* \brief Object 0x2023 (Loosen) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - strategy<br>
+* SubIndex 2 - target_torque<br>
+* SubIndex 3 - max_torque<br>
+* SubIndex 4 - min_angle<br>
+* SubIndex 5 - max_angle<br>
+* SubIndex 6 - safe_torque<br>
+* SubIndex 7 - target_angle<br>
+* SubIndex 8 - min_torque<br>
+* SubIndex 9 - angle_threshold<br>
+* SubIndex 10 - safe_angle<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2023[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2023[] = "Loosen\000"
+"strategy\000"
+"target_torque\000"
+"max_torque\000"
+"min_angle\000"
+"max_angle\000"
+"safe_torque\000"
+"target_angle\000"
+"min_torque\000"
+"angle_threshold\000"
+"safe_angle\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 strategy; /* Subindex1 - strategy */
+INT32 target_torque; /* Subindex2 - target_torque */
+INT32 max_torque; /* Subindex3 - max_torque */
+INT32 min_angle; /* Subindex4 - min_angle */
+INT32 max_angle; /* Subindex5 - max_angle */
+INT32 safe_torque; /* Subindex6 - safe_torque */
+INT32 target_angle; /* Subindex7 - target_angle */
+INT32 min_torque; /* Subindex8 - min_torque */
+INT32 angle_threshold; /* Subindex9 - angle_threshold */
+INT32 safe_angle; /* Subindex10 - safe_angle */
+} OBJ_STRUCT_PACKED_END
+TOBJ2023;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2023 Loosen0x2023
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={10,0,15000,30000,10000,20000,30000,15000,0,1500,100000}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2024 : Socket_Release
+******************************************************************************/
+
+/**
+* \addtogroup 0x2024 0x2024 | Socket_Release
+* @{
+* \brief Object 0x2024 (Socket_Release) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - torque_limit<br>
+* SubIndex 2 - release_threshold<br>
+* SubIndex 3 - release_angle<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2024[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2024[] = "Socket_Release\000"
+"torque_limit\000"
+"release_threshold\000"
+"release_angle\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+INT32 torque_limit; /* Subindex1 - torque_limit */
+INT32 release_threshold; /* Subindex2 - release_threshold */
+INT32 release_angle; /* Subindex3 - release_angle */
+} OBJ_STRUCT_PACKED_END
+TOBJ2024;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2024 Socket_Release0x2024
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={3,1500,0,500}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2031 : Job_Pset_Ctrl
+******************************************************************************/
+
+/**
+* \addtogroup 0x2031 0x2031 | Job_Pset_Ctrl
+* @{
+* \brief Object 0x2031 (Job_Pset_Ctrl) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - control<br>
+* SubIndex 2 - pset_no<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2031[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2031[] = "Job_Pset_Ctrl\000"
+"control\000"
+"pset_no\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 control; /* Subindex1 - control */
+UINT8 pset_no; /* Subindex2 - pset_no */
+} OBJ_STRUCT_PACKED_END
+TOBJ2031;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2031 Job_Pset_Ctrl0x2031
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={2,0,0}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2032 : KB_Cal
+******************************************************************************/
+
+/**
+* \addtogroup 0x2032 0x2032 | KB_Cal
+* @{
+* \brief Object 0x2032 (KB_Cal) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - cal_type<br>
+* SubIndex 2 - pset_no<br>
+* SubIndex 3 - k_value<br>
+* SubIndex 4 - b_value<br>
+* SubIndex 5 - cycle_limit<br>
+* SubIndex 6 - commit<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x2032[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_INTEGER32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE },
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READWRITE }};
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x2032[] = "KB_Cal\000"
+"cal_type\000"
+"pset_no\000"
+"k_value\000"
+"b_value\000"
+"cycle_limit\000"
+"commit\000\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT8 cal_type; /* Subindex1 - cal_type */
+UINT8 pset_no; /* Subindex2 - pset_no */
+UINT32 k_value; /* Subindex3 - k_value */
+INT32 b_value; /* Subindex4 - b_value */
+UINT32 cycle_limit; /* Subindex5 - cycle_limit */
+UINT8 commit; /* Subindex6 - commit */
+} OBJ_STRUCT_PACKED_END
+TOBJ2032;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ2032 KB_Cal0x2032
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+={6,0,0,1000,0,250000,0}
+#endif
+;
+/** @}*/
+
+
+/******************************************************************************
+*                    Object 0x2030 : Pset_Buffer
+******************************************************************************/
+
+/**
+* \addtogroup 0x2030 0x2030 | Pset_Buffer
+* @{
+* \brief Object 0x2030 (Pset_Buffer) definition：OCTET_STRING <=1528 B，下载用自定义 Write
+*/
+#ifdef _OBJD_
+/**
+* \brief Entry description
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2030 = { DEFTYPE_OCTETSTRING , 0x2FC0 , ACCESS_READWRITE };
+/**
+* \brief Object name
+*/
+OBJCONST UCHAR OBJMEM aName0x2030[] = "Pset_Buffer\000\377";
+#endif //#ifdef _OBJD_
+
+/**
+* \brief Object variable：1528 B 影子缓冲（M1 只接收，M2 拆步执行）
+*/
+PROTO UINT8 Pset_buffer0x2030[1528];
+PROTO UINT16 Pset_Buffer_Length0x2030;
+/** @}*/
+
 PROTO UINT8 ECAT_Read_0x203F_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
 PROTO UINT8 ECAT_Read_0x2100_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
-PROTO UINT8 ECAT_Read_0x2200_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
-PROTO UINT8 ECAT_Read_0x2201_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
 PROTO UINT8 ECAT_Write_0x2100_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
-PROTO UINT8 ECAT_Write_0x2200_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
-PROTO UINT8 ECAT_Write_0x2201_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2000_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2000_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2010_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2010_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2021_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2021_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2022_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2022_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2023_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2023_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2210_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2210_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Write_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
 
 
 #ifdef _OBJD_
 TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x1600 */
-{NULL , NULL ,  0x1600 , {DEFTYPE_PDOMAPPING , 8 | (OBJCODE_REC << 8)} , asEntryDesc0x1600 , aName0x1600 , &RxPDO1CSPCSV0x1600 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x1600 , {DEFTYPE_PDOMAPPING , 3 | (OBJCODE_REC << 8)} , asEntryDesc0x1600 , aName0x1600 , &RxPDO1CSPCSV0x1600 , NULL , NULL , 0x0000 },
 /* Object 0x1601 */
 {NULL , NULL ,  0x1601 , {DEFTYPE_PDOMAPPING , 6 | (OBJCODE_REC << 8)} , asEntryDesc0x1601 , aName0x1601 , &RxPDO2PP0x1601 , NULL , NULL , 0x0000 },
 /* Object 0x1602 */
 {NULL , NULL ,  0x1602 , {DEFTYPE_PDOMAPPING , 2 | (OBJCODE_REC << 8)} , asEntryDesc0x1602 , aName0x1602 , &RxPDO3PT0x1602 , NULL , NULL , 0x0000 },
 /* Object 0x1A00 */
-{NULL , NULL ,  0x1A00 , {DEFTYPE_PDOMAPPING , 7 | (OBJCODE_REC << 8)} , asEntryDesc0x1A00 , aName0x1A00 , &TxPDO1CSPCSV0x1A00 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x1A00 , {DEFTYPE_PDOMAPPING , 13 | (OBJCODE_REC << 8)} , asEntryDesc0x1A00 , aName0x1A00 , &TxPDO1CSPCSV0x1A00 , NULL , NULL , 0x0000 },
 /* Object 0x1A01 */
 {NULL , NULL ,  0x1A01 , {DEFTYPE_PDOMAPPING , 7 | (OBJCODE_REC << 8)} , asEntryDesc0x1A01 , aName0x1A01 , &TxPDO2PP0x1A01 , NULL , NULL , 0x0000 },
 /* Object 0x1A02 */
@@ -2867,6 +3953,22 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 {NULL , NULL ,  0x1C12 , {DEFTYPE_UNSIGNED16 , 3 | (OBJCODE_ARR << 8)} , asEntryDesc0x1C12 , aName0x1C12 , &sRxPDOassign , NULL , NULL , 0x0000 },
 /* Object 0x1C13 */
 {NULL , NULL ,  0x1C13 , {DEFTYPE_UNSIGNED16 , 3 | (OBJCODE_ARR << 8)} , asEntryDesc0x1C13 , aName0x1C13 , &sTxPDOassign , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2000 , {DEFTYPE_RECORD , 12 | (OBJCODE_REC << 8)} , asEntryDesc0x2000 , aName0x2000 , &Tool_Spec0x2000 , ECAT_Read_0x2000_Callback , ECAT_Write_0x2000_Callback , 0x0000 },
+{NULL , NULL ,  0x2001 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2001 , aName0x2001 , &controller_status0x2001 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2002 , {DEFTYPE_RECORD , 4 | (OBJCODE_REC << 8)} , asEntryDesc0x2002 , aName0x2002 , &Telemetry0x2002 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2010 , {DEFTYPE_RECORD , 5 | (OBJCODE_REC << 8)} , asEntryDesc0x2010 , aName0x2010 , &Maintenance_Cal0x2010 , ECAT_Read_0x2010_Callback , ECAT_Write_0x2010_Callback , 0x0000 },
+{NULL , NULL ,  0x2020 , {DEFTYPE_RECORD , 4 | (OBJCODE_REC << 8)} , asEntryDesc0x2020 , aName0x2020 , &Socket_Identify0x2020 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2021 , {DEFTYPE_RECORD , 12 | (OBJCODE_REC << 8)} , asEntryDesc0x2021 , aName0x2021 , &Rundown0x2021 , ECAT_Read_0x2021_Callback , ECAT_Write_0x2021_Callback , 0x0000 },
+{NULL , NULL ,  0x2022 , {DEFTYPE_RECORD , 15 | (OBJCODE_REC << 8)} , asEntryDesc0x2022 , aName0x2022 , &Snug0x2022 , ECAT_Read_0x2022_Callback , ECAT_Write_0x2022_Callback , 0x0000 },
+{NULL , NULL ,  0x2023 , {DEFTYPE_RECORD , 10 | (OBJCODE_REC << 8)} , asEntryDesc0x2023 , aName0x2023 , &Loosen0x2023 , ECAT_Read_0x2023_Callback , ECAT_Write_0x2023_Callback , 0x0000 },
+{NULL , NULL ,  0x2024 , {DEFTYPE_RECORD , 3 | (OBJCODE_REC << 8)} , asEntryDesc0x2024 , aName0x2024 , &Socket_Release0x2024 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2031 , {DEFTYPE_RECORD , 2 | (OBJCODE_REC << 8)} , asEntryDesc0x2031 , aName0x2031 , &Job_Pset_Ctrl0x2031 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2032 , {DEFTYPE_RECORD , 6 | (OBJCODE_REC << 8)} , asEntryDesc0x2032 , aName0x2032 , &KB_Cal0x2032 , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2030 , {DEFTYPE_OCTETSTRING , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2030 , aName0x2030 , &Pset_buffer0x2030 , ECAT_Read_0x2030_Callback , ECAT_Write_0x2030_Callback , 0x0000 },
+/* Object 0x2039 */
+{NULL , NULL ,  0x2039 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2039 , aName0x2039 , &Pset_CRC32_0x2039 , NULL , NULL , 0x0000 },
+/* Object 0x203A */
+{NULL , NULL ,  0x203A , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x203A , aName0x203A , &Pset_Length_0x203A , NULL , NULL , 0x0000 },
 /* Object 0x203F */
 {NULL , NULL ,  0x203F , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x203F , aName0x203F , &Fault_Code0x203F , ECAT_Read_0x203F_Callback , NULL , 0x0000 },
 /* Object 0x205A */
@@ -2882,9 +3984,26 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x2100 */
 {NULL , NULL ,  0x2100 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2100 , aName0x2100 , &Pos_Loop_Kp0x2100 , ECAT_Read_0x2100_Callback , ECAT_Write_0x2100_Callback , 0x0000 },
 /* Object 0x2200 */
-{NULL , NULL ,  0x2200 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2200 , aName0x2200 , &Spd_Loop_Kp0x2200 , ECAT_Read_0x2200_Callback , ECAT_Write_0x2200_Callback , 0x0000 },
+{NULL , NULL ,  0x2200 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2200 , aName0x2200 , &status_code0x2200 , NULL , NULL , 0x0000 },
 /* Object 0x2201 */
-{NULL , NULL ,  0x2201 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2201 , aName0x2201 , &Spd_Loop_Ti0x2201 , ECAT_Read_0x2201_Callback , ECAT_Write_0x2201_Callback , 0x0000 },
+{NULL , NULL ,  0x2201 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2201 , aName0x2201 , &status_code20x2201 , NULL , NULL , 0x0000 },
+/* Object 0x2202 */
+{NULL , NULL ,  0x2202 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2202 , aName0x2202 , &status_code0x2202 , NULL , NULL , 0x0000 },
+/* Object 0x2203 */
+{NULL , NULL ,  0x2203 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2203 , aName0x2203 , &fail_code0x2203 , NULL , NULL , 0x0000 },
+/* Object 0x2208 */
+{NULL , NULL ,  0x2208 , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2208 , aName0x2208 , &current_sample0x2208 , NULL , NULL , 0x0000 },
+/* Object 0x2209 */
+{NULL , NULL ,  0x2209 , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2209 , aName0x2209 , &temperature_sample0x2209 , NULL , NULL , 0x0000 },
+/* Object 0x220B */
+{NULL , NULL ,  0x220B , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x220B , aName0x220B , &pset_echo0x220B , NULL , NULL , 0x0000 },
+/* Object 0x220C */
+{NULL , NULL ,  0x220C , {DEFTYPE_UNSIGNED8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x220C , aName0x220C , &step_echo0x220C , NULL , NULL , 0x0000 },
+/* Object 0x220D */
+{NULL , NULL ,  0x220D , {DEFTYPE_UNSIGNED8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x220D , aName0x220D , &step_result0x220D , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x2210 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2210 , aName0x2210 , &Spd_Loop_Kp0x2210 , ECAT_Read_0x2210_Callback , ECAT_Write_0x2210_Callback , 0x0000 },
+{NULL , NULL ,  0x2211 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2211 , aName0x2211 , &Spd_Loop_Ti0x2211 , ECAT_Read_0x2211_Callback , ECAT_Write_0x2211_Callback , 0x0000 },
+
 /* Object 0x2300 */
 {NULL , NULL ,  0x2300 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2300 , aName0x2300 , &Cur_Loop_IqKp0x2300 , NULL , NULL , 0x0000 },
 /* Object 0x2301 */

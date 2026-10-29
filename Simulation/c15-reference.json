@@ -1,0 +1,15 @@
+{
+  "source_commit": "12b5ada2bc019c786b24d57d3a8504a6bec7d2f4",
+  "scope": "SDO/PDO transport only; C15 motion model not copied",
+  "source_files": {
+    "ethercat/QiaoTian_XMC_Servo.c": "6857badcb3b9ac5d6b648cfbf81a607c17e7a1886801e1d7c26802b5cd44772d",
+    "ethercat/QiaoTian_XMC_Servo.h": "384b5966db37487ccaaf1a920b28b719473c03e9d1938d894155063394e3955d",
+    "ethercat/QiaoTian_XMC_ServoObjects.h": "e36e4bc1fe5294ed4eb54a609e47489a02d74d754284eb565cd9055dec2180f8",
+    "ethercat/eeprom.h": "b926e02ac716c706028b2bf15189c16012baf8e736c88cff9fe4bd0647c50dba",
+    "ethercat/QiaoTian_XMC_Servo_0927.xml": "b2b603e973b0fc9e684dcfad3b187cc887e9208d8bc6d22d1f165f8620a3c602"
+  },
+  "mapping": "UIO map3, Rx12B/Tx40B; differs from customer original44B/40B",
+  "modified_after_import": [
+    "bus_voltage set unavailable (0), not measured"
+  ]
+}

@@ -1,2 +1,7 @@
 /Debug/
 /Debug/
+
+/build/
+/evidence/
+__pycache__/
+*.pyc

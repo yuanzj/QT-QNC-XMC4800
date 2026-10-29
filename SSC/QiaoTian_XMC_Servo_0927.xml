@@ -8,15 +8,15 @@
 	<Descriptions>
 		<Groups>
 			<Group>
-				<Type>Infineon slave</Type>
-				<Name>Infineon slave</Name>
+				<Type>XMC_ESC</Type>
+				<Name>XMC_ESC</Name>
 				<ImageData16x14>424DD8020000000000003600000028000000100000000E0000000100180000000000A2020000120B0000120B000000000000000000001306E31306E3190CE42B1FE62B1FE61306E31F13E5190CE42519E51306E31306E3190CE42F24E7190CE41306E31306E31306E31306E35F56EC645CED645CED4137E91F13E5473DE95F57EC3227E71306E3473DE95A51EC271BE61306E31306E31409CA524CC68E8AD74F48C1615CC82218D03E36BF716BCE746FCE453DC01307CE3931BA7D78D27671D1150CB21409CA1712801B1D1D1B1D1D1B1D1D1B1D1D120B891B1D1D1B1D1D1B1D1D1B1D1D120B891B1D1D1B1D1D1B1D1D1B1D1D1712801712807F8080D4D5D5D4D5D5383939120B89545656D4D5D5D4D5D5626464130C89292B2BD4D5D5D4D5D56264641915801712804647471B1D1DAAAAAAD4D5D5130E82383939292B2B717272D4D5D5151183D4D5D57F80801B1D1D7172721E1C81191580464747D4D5D5D4D5D51B1D1D19158A292B2BD4D5D5D4D5D5292B2B1B1B8AD4D5D56264641B1D1D1B1D1D2427821E1D81D4D5D54647476264643839391E208BD4D5D57F8080464747545656242A8BD4D5D59B9C9C292B2BAAAAAA2D3683252882464747D4D5D5D4D5D51B1D1D272D85292B2BD4D5D5D4D5D5292B2B2E37861B1D1DD4D5D5D4D5D5464747394484323BB52324812122822426822526824554C0323883292B822A2D83353C84424CBF3238843940842E32834853865D6EBB5262EB3E43E83334E74147E94349E9535FEB4D56EA5662EB484DEA545DEB636FED545AEA5A63EC6671ED8CA0F290A5F2748AEF6B7BEE5D68EC6874ED788AEF8397F17684EF7986EF8C9FF2818FF1818EF08E9DF18A97F18791F19BA9F3B0C0F691A4F291A2F28390F192A1F29CACF3A3B3F498A6F3A4B3F4AEBDF5B0BEF59EA8F3A3ADF4BBC7F7C4D1F8CAD7F8CED9F9B4C4F6B8C8F6ACB8F59AA3F3B6C1F6C5D2F8C2CDF8CCD7F9D2DDF9D5E0FAD2DAF9D5DCF9DFE7FBE2E9FBE5EBFBE8EEFB0000</ImageData16x14>
 			</Group>
 		</Groups>
 		<Devices>
 			<Device Physics="YY">
-				<Type ProductCode="#x00000000" RevisionNo="#x0">QiaoTian_XMC_Servo</Type>
-				<Name>QiaoTian_XMC_Servo</Name>
+				<Type ProductCode="#x00000000" RevisionNo="#x0">XMC_ESC</Type>
+				<Name>XMC_ESC</Name>
 				<Info>
 					<StateMachine>
 						<Timeout>
@@ -33,7 +33,7 @@
 						</Timeout>
 					</Mailbox>
 				</Info>
-				<GroupType>Infineon slave</GroupType>
+				<GroupType>XMC_ESC</GroupType>
 				<Profile>
 					<ProfileNo>402</ProfileNo>
 					<AddInfo>0</AddInfo>
@@ -1965,7 +1965,7 @@
 									<SubItem>
 										<Name>SubIndex 000</Name>
 										<Info>
-											<DefaultData>03</DefaultData>
+											<DefaultData>01</DefaultData>
 										</Info>
 									</SubItem>
 									<SubItem>
@@ -1997,7 +1997,7 @@
 									<SubItem>
 										<Name>SubIndex 000</Name>
 										<Info>
-											<DefaultData>03</DefaultData>
+											<DefaultData>01</DefaultData>
 										</Info>
 									</SubItem>
 									<SubItem>
@@ -2155,7 +2155,86 @@
 								</Flags>
 							</Object>
 							<Object>
+								<Index>#x2001</Index>
+								<Name>Controller_Status</Name>
+								<Type>UDINT</Type>
+								<BitSize>32</BitSize>
+								<Flags>
+									<Access>rw</Access>
+									<PdoMapping>r</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
 								<Index>#x2200</Index>
+								<Name>status_code</Name>
+								<Type>UDINT</Type>
+								<BitSize>32</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x2201</Index>
+								<Name>status_code2</Name>
+								<Type>UDINT</Type>
+								<BitSize>32</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x2208</Index>
+								<Name>current_sample</Name>
+								<Type>DINT</Type>
+								<BitSize>32</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x2209</Index>
+								<Name>temperature_sample</Name>
+								<Type>DINT</Type>
+								<BitSize>32</BitSize>
+								<Flags>
+									<Access>ro</Access>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x220B</Index>
+								<Name>pset_echo</Name>
+								<Type>UINT</Type>
+								<BitSize>16</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x220C</Index>
+								<Name>step_echo</Name>
+								<Type>USINT</Type>
+								<BitSize>8</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x220D</Index>
+								<Name>step_result</Name>
+								<Type>USINT</Type>
+								<BitSize>8</BitSize>
+								<Flags>
+									<Access>ro</Access>
+									<PdoMapping>t</PdoMapping>
+								</Flags>
+							</Object>
+							<Object>
+								<Index>#x2210</Index>
 								<Name>Spd_Loop_Kp</Name>
 								<Type>INT</Type>
 								<BitSize>16</BitSize>
@@ -2165,7 +2244,7 @@
 								</Flags>
 							</Object>
 							<Object>
-								<Index>#x2201</Index>
+								<Index>#x2211</Index>
 								<Name>Spd_Loop_Ti</Name>
 								<Type>INT</Type>
 								<BitSize>16</BitSize>
@@ -2174,6 +2253,7 @@
 									<PdoMapping>r</PdoMapping>
 								</Flags>
 							</Object>
+<!-- TODO(OPEN-5): SDO 对象 0x2000/0x2010/0x2020-0x2024/0x2030/0x2031/0x2032 尚未加入 ESI 字典（Phase-2 SSC 重生成） -->
 							<Object>
 								<Index>#x2300</Index>
 								<Name>Cur_Loop_IqKp</Name>
@@ -3026,64 +3106,28 @@
 				<Fmmu>MBoxState</Fmmu>
 				<Sm MinSize="#x24" MaxSize="#x80" DefaultSize="#x80" StartAddress="#x1000" ControlByte="#x26" Enable="1">MBoxOut</Sm>
 				<Sm MinSize="#x24" MaxSize="#x80" DefaultSize="#x80" StartAddress="#x1080" ControlByte="#x22" Enable="1">MBoxIn</Sm>
-				<Sm DefaultSize="44" StartAddress="#x1100" ControlByte="#x64" Enable="1">Outputs</Sm>
+				<Sm DefaultSize="12" StartAddress="#x1100" ControlByte="#x64" Enable="1">Outputs</Sm>
 				<Sm DefaultSize="40" StartAddress="#x1400" ControlByte="#x20" Enable="1">Inputs</Sm>
 				<RxPdo Fixed="false" Mandatory="true" Sm="2">
 					<Index>#x1600</Index>
 					<Name>RxPDO1 CSP/CSV</Name>
+
 					<Entry>
-						<Index>#x6040</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>16</BitLen>
-						<Name>Controlword</Name>
-						<DataType>UINT</DataType>
-					</Entry>
-					<Entry>
-						<Index>#x607A</Index>
+						<Index>#x2001</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>32</BitLen>
-						<Name>Target_position</Name>
-						<DataType>DINT</DataType>
-					</Entry>
-					<Entry>
-						<Index>#x60FF</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>32</BitLen>
-						<Name>Target_velocity</Name>
-						<DataType>DINT</DataType>
-					</Entry>
-					<Entry>
-						<Index>#x6081</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>32</BitLen>
-						<Name>Profile_velocity</Name>
+						<Name>Controller_status</Name>
 						<DataType>UDINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x6083</Index>
+						<Index>#x0000</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>32</BitLen>
-						<Name>Profile_acceleration</Name>
-						<DataType>UDINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x6084</Index>
+						<Index>#x0000</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>32</BitLen>
-						<Name>Profile_deceleration</Name>
-						<DataType>UDINT</DataType>
-					</Entry>
-					<Entry>
-						<Index>#x6060</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>8</BitLen>
-						<Name>Modes_of_operation</Name>
-						<DataType>SINT</DataType>
-					</Entry>
-					<Entry>
-						<Index>#x0</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>8</BitLen>
 					</Entry>
 				</RxPdo>
 				<RxPdo Fixed="false" Mandatory="true" Sm="2">
@@ -3153,6 +3197,28 @@
 				<TxPdo Fixed="false" Mandatory="true" Sm="3">
 					<Index>#x1A00</Index>
 					<Name>TxPDO1 CSP/CSV</Name>
+
+					<Entry>
+						<Index>#x2200</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
+						<Name>status_code</Name>
+						<DataType>UDINT</DataType>
+					</Entry>
+					<Entry>
+						<Index>#x2201</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
+						<Name>status_code2</Name>
+						<DataType>UDINT</DataType>
+					</Entry>
+					<Entry>
+						<Index>#x6077</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>16</BitLen>
+						<Name>Torque_actual</Name>
+						<DataType>INT</DataType>
+					</Entry>
 					<Entry>
 						<Index>#x6041</Index>
 						<SubIndex>0</SubIndex>
@@ -3161,44 +3227,61 @@
 						<DataType>UINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x603F</Index>
-						<SubIndex>0</SubIndex>
-						<BitLen>16</BitLen>
-						<Name>Error_code</Name>
-						<DataType>UINT</DataType>
-					</Entry>
-					<Entry>
 						<Index>#x6064</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>32</BitLen>
-						<Name>Position_actual_value</Name>
+						<Name>Position_actual</Name>
 						<DataType>DINT</DataType>
 					</Entry>
 					<Entry>
 						<Index>#x606C</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>32</BitLen>
-						<Name>Velocity_actual_value</Name>
+						<Name>Velocity_actual</Name>
 						<DataType>DINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x6077</Index>
+						<Index>#x220B</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>16</BitLen>
-						<Name>Torque_actual_value</Name>
-						<DataType>INT</DataType>
+						<Name>pset_echo</Name>
+						<DataType>UINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x6061</Index>
+						<Index>#x220C</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>8</BitLen>
-						<Name>Modes_of_operation_display</Name>
-						<DataType>SINT</DataType>
+						<Name>step_echo</Name>
+						<DataType>USINT</DataType>
 					</Entry>
 					<Entry>
-						<Index>#x0</Index>
+						<Index>#x220D</Index>
 						<SubIndex>0</SubIndex>
 						<BitLen>8</BitLen>
+						<Name>step_result</Name>
+						<DataType>USINT</DataType>
+					</Entry>
+					<Entry>
+						<Index>#x2208</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
+						<Name>current_sample</Name>
+						<DataType>DINT</DataType>
+					</Entry>
+					<Entry>
+						<Index>#x0000</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
+					</Entry>
+					<Entry>
+						<Index>#x0000</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
+					</Entry>
+					<Entry>
+						<Index>#x0000</Index>
+						<SubIndex>0</SubIndex>
+						<BitLen>32</BitLen>
 					</Entry>
 				</TxPdo>
 				<TxPdo Fixed="false" Mandatory="true" Sm="3">

@@ -24,6 +24,9 @@
 #include "ecat_def.h"
 
 #include "applInterface.h"
+/* simulated slave 1 ms model + Pset/工步引擎 (Motion_Control/DOCH_cyclic_sync_position.c) */
+extern void SimulatedSlave_Tick(void);
+#include "DOCH_cyclic_sync_position.h"
 
 #define _QIAO_TIAN__XMC__SERVO_ 1
 #include "QiaoTian_XMC_Servo.h"
@@ -403,70 +406,53 @@ UINT16 APPL_GenerateMapping_New(UINT16 *pInputSize,UINT16 *pOutputSize)
 *////////////////////////////////////////////////////////////////////////////////////////
 void APPL_InputMapping(UINT16* pData)
 {
-//	memcpy(pData,&(((UINT16 *)&IN_GENERIC0x6000)[1]),SIZEOF(IN_GENERIC0x6000)-2);
-    UINT16 j = 0;
-//    UINT8 *pTmpData = (UINT8 *)pData;
-	UINT16 *pTmpData = (UINT16 *)pData;
-    UINT8 AxisIndex;
-    for (j = 0; j < sTxPDOassign.u16SubIndex0; j++)
-    {
-        /*The Axis index is based on the PDO mapping offset (0x10)*/
-        AxisIndex = ((sTxPDOassign.aEntries[j] & 0xF0) >> 4);
+    /* S2/M1: TxPDO 40 B —— 客户文档表 4-1（v2 §3.1），全部小端逐字节写 */
+    UINT8 *p = (UINT8 *)pData;
 
-        switch ((sTxPDOassign.aEntries[j] & 0x000F))
-        {
-        	case 0:    //Copy CSP/CSV TxPDO Entries
-            {
-                //Total 15Bytes
-//            	*(UINT16*)pTmpData = Statusword0x6041;//2Bytes
-//            	pTmpData += 2;
-//            	*(UINT16*)pTmpData = Error_code0x603F;//2Bytes
-//            	pTmpData += 2;
-//            	*(INT32*)pTmpData = Position_actual_value0x6064;//4Bytes
-//            	pTmpData += 4;
-//            	*(INT32*)pTmpData = Velocity_actual_value0x606C;//4Bytes
-//            	pTmpData += 4;
-//            	*(INT16*)pTmpData = Torque_actual_value0x6077;//4Bytes
-//            	pTmpData += 2;
-//            	*(INT8*)pTmpData = Modes_of_operation_display0x6061;//1Bytes
-//            	pTmpData += 1;
-
-            	*pTmpData++ = Statusword0x6041;//2Bytes
-            	*pTmpData++ = Error_code0x603F;//2Bytes
-            	*pTmpData++ = Position_actual_value0x6064 & 0xFFFF;
-            	*pTmpData++ = (Position_actual_value0x6064>>16) & 0xFFFF;
-            	*pTmpData++ = Velocity_actual_value0x606C & 0xFFFF;
-            	*pTmpData++ = (Velocity_actual_value0x606C>>16) & 0xFFFF;
-            	*pTmpData++ = Torque_actual_value0x6077;
-            	*pTmpData++ = Modes_of_operation_display0x6061 & 0x00FF;
-            }
-            break;
-
-        	case 1://Copy PP TxPDO Entries
-            {
-                //Total 15Bytes
-            	*pTmpData++ = Statusword0x6041;//2Bytes
-            	*pTmpData++ = Error_code0x603F;//2Bytes
-            	*pTmpData++ = Position_actual_value0x6064 & 0xFFFF;
-            	*pTmpData++ = (Position_actual_value0x6064>>16) & 0xFFFF;
-            	*pTmpData++ = Velocity_actual_value0x606C & 0xFFFF;
-            	*pTmpData++ = (Velocity_actual_value0x606C>>16) & 0xFFFF;
-            	*pTmpData++ = Torque_actual_value0x6077;
-            	*pTmpData++ = Modes_of_operation_display0x6061 & 0x00FF;
-            }
-            break;
-
-        	case 2://Copy PT TxPDO Entries
-            {
-            	*pTmpData++ = Statusword0x6041;//2Bytes
-            	*pTmpData++ = Error_code0x603F;//2Bytes
-            	*pTmpData++ = Torque_actual_value0x6077;
-            	*pTmpData++ = Modes_of_operation_display0x6061 & 0x00FF;
-            }
-            break;
-        }
-    }
+    /* 0x00 status_code U32 (0x2200) */
+    p[0]  = (UINT8)(status_code0x2200 & 0xFF);
+    p[1]  = (UINT8)((status_code0x2200 >> 8) & 0xFF);
+    p[2]  = (UINT8)((status_code0x2200 >> 16) & 0xFF);
+    p[3]  = (UINT8)((status_code0x2200 >> 24) & 0xFF);
+    /* 0x04 status_code2 U32 (0x2201) TODO(OPEN-3) 第二状态码索引为本方暂定 */
+    p[4]  = (UINT8)(status_code20x2201 & 0xFF);
+    p[5]  = (UINT8)((status_code20x2201 >> 8) & 0xFF);
+    p[6]  = (UINT8)((status_code20x2201 >> 16) & 0xFF);
+    p[7]  = (UINT8)((status_code20x2201 >> 24) & 0xFF);
+    /* 0x08 torque_actual I16 (0x6077) */
+    p[8]  = (UINT8)((UINT16)Torque_actual_value0x6077 & 0xFF);
+    p[9]  = (UINT8)(((UINT16)Torque_actual_value0x6077 >> 8) & 0xFF);
+    /* 0x0A statusword U16 (0x6041) */
+    p[10] = (UINT8)(Statusword0x6041 & 0xFF);
+    p[11] = (UINT8)((Statusword0x6041 >> 8) & 0xFF);
+    /* 0x0C position_actual I32 (0x6064) */
+    p[12] = (UINT8)((UINT32)Position_actual_value0x6064 & 0xFF);
+    p[13] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 8) & 0xFF);
+    p[14] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 16) & 0xFF);
+    p[15] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 24) & 0xFF);
+    /* 0x10 velocity_actual I32 (0x606C) */
+    p[16] = (UINT8)((UINT32)Velocity_actual_value0x606C & 0xFF);
+    p[17] = (UINT8)(((UINT32)Velocity_actual_value0x606C >> 8) & 0xFF);
+    p[18] = (UINT8)(((UINT32)Velocity_actual_value0x606C >> 16) & 0xFF);
+    p[19] = (UINT8)(((UINT32)Velocity_actual_value0x606C >> 24) & 0xFF);
+    /* 0x14 pset_echo U16 (0x220B)：高 8 = Pset 号，低 8 = 工步号 */
+    p[20] = (UINT8)(pset_echo0x220B & 0xFF);
+    p[21] = (UINT8)((pset_echo0x220B >> 8) & 0xFF);
+    /* 0x16 step_echo U8 (0x220C) */
+    p[22] = step_echo0x220C;
+    /* 0x17 step_result U8 (0x220D) TODO(OPEN-4) */
+    p[23] = step_result0x220D;
+    /* 0x18 current_sample I32 (0x2208) */
+    p[24] = (UINT8)((UINT32)current_sample0x2208 & 0xFF);
+    p[25] = (UINT8)(((UINT32)current_sample0x2208 >> 8) & 0xFF);
+    p[26] = (UINT8)(((UINT32)current_sample0x2208 >> 16) & 0xFF);
+    p[27] = (UINT8)(((UINT32)current_sample0x2208 >> 24) & 0xFF);
+    /* 0x1C/0x20/0x24 三个 32 位填充（PDO 0x0000） */
+    p[28] = 0; p[29] = 0; p[30] = 0; p[31] = 0;
+    p[32] = 0; p[33] = 0; p[34] = 0; p[35] = 0;
+    p[36] = 0; p[37] = 0; p[38] = 0; p[39] = 0;
 }
+
 
 void APPL_InputMapping_New(UINT16* pData)
 {
@@ -532,58 +518,22 @@ void APPL_InputMapping_New(UINT16* pData)
 *////////////////////////////////////////////////////////////////////////////////////////
 void APPL_OutputMapping(UINT16* pData)
 {
-//	memcpy(&(((UINT16 *)&OUT_GENERIC0x7000)[1]),pData,SIZEOF(OUT_GENERIC0x7000)-2);
-    UINT16 j = 0;
-//    UINT8 *pTmpData = (UINT8 *)pData;
-	UINT16 *pTmpData = (UINT16 *)pData;
-    UINT8 AxisIndex;
-    for (j = 0; j < sRxPDOassign.u16SubIndex0; j++)
-    {
-        /*The Axis index is based on the PDO mapping offset (0x10)*/
-        AxisIndex = ((sRxPDOassign.aEntries[j] & 0xF0) >> 4);
+    /* RxPDO 12 B —— docx 表 4-2 主口径（C 方案）：
+     *   0x00 0x2001:00 controller_status UINT32（主站→从站的控制器状态）
+     *   0x04 备用 U32（PDO 填充）
+     *   0x08 备用 U32（PDO 填充）
+     * 运动指令不走 PDO：主站经 SDO 下发 Pset(0x2030) + 0x2031 启停，工步引擎按 Pset 参数运行。
+     * CiA402 的 0x6040/0x607A/0x60FF/0x6060 仍在 OD 中，但不再进任何 PDO（只供 SDO 直驱调试）。
+     */
+    UINT8 *p = (UINT8 *)pData;
 
-        switch ((sRxPDOassign.aEntries[j] & 0x000F))
-        {
-        	case 0:    //CSP/CSV RxPDO Entries
-            {
-            	Controlword0x6040      = SWAPWORD(*pTmpData++);
-            	Target_position0x607A  =SWAPWORD(*pTmpData++);
-            	Target_position0x607A +=(SWAPWORD(*pTmpData++) << 16);
-            	Target_velocity0x60FF  =SWAPWORD(*pTmpData++);
-            	Target_velocity0x60FF +=(SWAPWORD(*pTmpData++) << 16);
-            	Profile_velocity0x6081  =SWAPWORD(*pTmpData++);
-            	Profile_velocity0x6081 +=(SWAPWORD(*pTmpData++) << 16);
-            	Profile_acceleration0x6083  =SWAPWORD(*pTmpData++);
-            	Profile_acceleration0x6083 +=(SWAPWORD(*pTmpData++) << 16);
-            	Profile_deceleration0x6084  =SWAPWORD(*pTmpData++);
-            	Profile_deceleration0x6084 +=(SWAPWORD(*pTmpData++) << 16);
-            	Modes_of_operation0x6060 = SWAPWORD(*pTmpData++) & 0xFF;
-			}
-            break;
-
-        	case 1:    //PP RxPDO Entries
-            {
-            	Quick_stop_deceleration0x6085  =SWAPWORD(*pTmpData++);
-            	Quick_stop_deceleration0x6085 +=(SWAPWORD(*pTmpData++) << 16);
-            	Quick_stop_option_code0x605A  =SWAPWORD(*pTmpData++);
-            	ShutdownOptionCode0x605B  =SWAPWORD(*pTmpData++);
-            	DisableOperationOptionCode0x605C  =SWAPWORD(*pTmpData++);
-            	HaltOptionCode0x605D  =SWAPWORD(*pTmpData++);
-            	FaultReactionOptionCode0x605E  =SWAPWORD(*pTmpData++);
-
-            }
-            break;
-
-        	case 2:    //PT RxPDO Entries
-            {
-            	Target_torque0x6071 = SWAPWORD(*pTmpData++);
-            	Torque_slope0x6087  =SWAPWORD(*pTmpData++);
-            	Torque_slope0x6087 +=(SWAPWORD(*pTmpData++) << 16);
-            }
-            break;
-        }
-    }
+    controller_status0x2001 = ((UINT32)p[0]) |
+                              ((UINT32)p[1] << 8) |
+                              ((UINT32)p[2] << 16) |
+                              ((UINT32)p[3] << 24);
+    /* p[4..11]：备用 U32 ×2，忽略 */
 }
+
 
 void APPL_OutputMapping_New(UINT16* pData)
 {
@@ -637,10 +587,528 @@ void APPL_OutputMapping_New(UINT16* pData)
             or from the mainloop if no synchronisation is supported
 *////////////////////////////////////////////////////////////////////////////////////////
 void process_app(TOBJ7000 *OUT_GENERIC, TOBJ6000 *IN_GENERIC);
+/* =====================================================================================
+   S2/M1: 客户 SDO 对象访问（v2 §4.2/§5）
+   - 5 个对象含 U8+U32 混排子索引，32 位条目在 SSC 默认访问下必须 WORD 对齐，
+     故注册对象级 Read/Write 回调，按字节偏移打包/解包（SSC ET9300 推荐做法）。
+   - 0x2030:01 为 OCTET_STRING(<=1528 B)，分段 SDO 下载收完后一次性回调 Write。
+   - TODO(OPEN-7): Pset 拆步与执行在 M2；本文件只做接收与长度记录。
+   ===================================================================================== */
+typedef struct
+{
+    UINT8  size;      /* 1 / 2 / 4 / 16 字节 */
+    UINT16 offset;    /* 相对对象变量起点（已含 u16SubIndex0 的 2 B） */
+    UINT8  writable;  /* 0 = 只读 */
+} TOBJ_SDOFIELD;
+
+static const TOBJ_SDOFIELD sSdoFields0x2000[12] = {
+    { 16, 2, 0 }  /* sub1 tool_sn */,
+    { 1, 18, 0 }  /* sub2 model */,
+    { 4, 19, 0 }  /* sub3 max_torque */,
+    { 4, 23, 0 }  /* sub4 max_speed */,
+    { 1, 27, 0 }  /* sub5 max_temp */,
+    { 1, 28, 0 }  /* sub6 maintenance */,
+    { 4, 29, 0 }  /* sub7 service_interval */,
+    { 4, 33, 0 }  /* sub8 used_life */,
+    { 4, 37, 0 }  /* sub9 max_life */,
+    { 4, 41, 0 }  /* sub10 torque_cal */,
+    { 4, 45, 0 }  /* sub11 reserved1 */,
+    { 4, 49, 0 }  /* sub12 reserved2 */
+};
+
+static const TOBJ_SDOFIELD sSdoFields0x2010[5] = {
+    { 1, 2, 1 }  /* sub1 maintenance */,
+    { 4, 3, 1 }  /* sub2 torque_cal */,
+    { 4, 7, 1 }  /* sub3 reserved1 */,
+    { 4, 11, 1 }  /* sub4 reserved2 */,
+    { 4, 15, 1 }  /* sub5 reserved3 */
+};
+
+static const TOBJ_SDOFIELD sSdoFields0x2021[12] = {
+    { 1, 2, 1 }  /* sub1 mode */,
+    { 4, 3, 1 }  /* sub2 target_angle */,
+    { 4, 7, 1 }  /* sub3 angle_threshold */,
+    { 4, 11, 1 }  /* sub4 target_torque */,
+    { 4, 15, 1 }  /* sub5 safe_torque */,
+    { 4, 19, 1 }  /* sub6 safe_angle */,
+    { 1, 23, 1 }  /* sub7 angle_reset */,
+    { 1, 24, 1 }  /* sub8 torque_reset */,
+    { 1, 25, 1 }  /* sub9 auto_adjust */,
+    { 4, 26, 1 }  /* sub10 speed_adjust_ratio */,
+    { 4, 30, 1 }  /* sub11 auto_sensitivity */,
+    { 4, 34, 1 }  /* sub12 target_brake_ratio */
+};
+
+static const TOBJ_SDOFIELD sSdoFields0x2022[15] = {
+    { 1, 2, 1 }  /* sub1 strategy */,
+    { 4, 3, 1 }  /* sub2 target_torque */,
+    { 4, 7, 1 }  /* sub3 max_torque */,
+    { 4, 11, 1 }  /* sub4 min_torque */,
+    { 4, 15, 1 }  /* sub5 angle_threshold */,
+    { 4, 19, 1 }  /* sub6 min_angle */,
+    { 4, 23, 1 }  /* sub7 max_angle */,
+    { 4, 27, 1 }  /* sub8 safe_angle */,
+    { 4, 31, 1 }  /* sub9 safe_torque */,
+    { 4, 35, 1 }  /* sub10 target_angle */,
+    { 4, 39, 1 }  /* sub11 start_torque */,
+    { 1, 43, 1 }  /* sub12 torque_value_mode */,
+    { 1, 44, 1 }  /* sub13 angle_value_mode */,
+    { 1, 45, 1 }  /* sub14 angle_reset */,
+    { 1, 46, 1 }  /* sub15 torque_reset */
+};
+
+static const TOBJ_SDOFIELD sSdoFields0x2023[10] = {
+    { 1, 2, 1 }  /* sub1 strategy */,
+    { 4, 3, 1 }  /* sub2 target_torque */,
+    { 4, 7, 1 }  /* sub3 max_torque */,
+    { 4, 11, 1 }  /* sub4 min_angle */,
+    { 4, 15, 1 }  /* sub5 max_angle */,
+    { 4, 19, 1 }  /* sub6 safe_torque */,
+    { 4, 23, 1 }  /* sub7 target_angle */,
+    { 4, 27, 1 }  /* sub8 min_torque */,
+    { 4, 31, 1 }  /* sub9 angle_threshold */,
+    { 4, 35, 1 }  /* sub10 safe_angle */
+};
+
+static UINT8 SdoField_Read(const UINT8 *base, const TOBJ_SDOFIELD *map,
+                           UINT8 maxSubIndex, UINT8 subindex,
+                           UINT32 dataSize, UINT16 MBXMEM *pData)
+{
+    const TOBJ_SDOFIELD *f;
+    UINT16 i;
+
+    if (subindex == 0)
+    {
+        /* SubIndex0 = 条目数（UINT16，按 1 字节 SDO 返回低字节） */
+        pData[0] = (UINT16)((const UINT16 *)base)[0];
+        return 0;
+    }
+    if (subindex > maxSubIndex)
+    {
+        return ABORTIDX_SUBINDEX_NOT_EXISTING;
+    }
+    f = &map[subindex - 1];
+    if (dataSize != f->size)
+    {
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    switch (f->size)
+    {
+    case 1:
+        pData[0] = (UINT16)base[f->offset];
+        break;
+    case 2:
+        pData[0] = (UINT16)base[f->offset] | ((UINT16)base[f->offset + 1] << 8);
+        break;
+    case 4:
+        pData[0] = (UINT16)base[f->offset] | ((UINT16)base[f->offset + 1] << 8);
+        pData[1] = (UINT16)base[f->offset + 2] | ((UINT16)base[f->offset + 3] << 8);
+        break;
+    case 16:
+        for (i = 0; i < 16; i++)
+        {
+            ((UINT8 *)pData)[i] = base[f->offset + i];
+        }
+        break;
+    default:
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    return 0;
+}
+
+static UINT8 SdoField_Write(UINT8 *base, const TOBJ_SDOFIELD *map,
+                            UINT8 maxSubIndex, UINT8 subindex,
+                            UINT32 dataSize, UINT16 MBXMEM *pData)
+{
+    const TOBJ_SDOFIELD *f;
+    UINT16 i;
+
+    if (subindex == 0)
+    {
+        /* 条目数固定，忽略对 SubIndex0 的写 */
+        return 0;
+    }
+    if (subindex > maxSubIndex)
+    {
+        return ABORTIDX_SUBINDEX_NOT_EXISTING;
+    }
+    f = &map[subindex - 1];
+    if (dataSize != f->size)
+    {
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    if (f->writable == 0)
+    {
+        return ABORTIDX_READ_ONLY_ENTRY;
+    }
+    switch (f->size)
+    {
+    case 1:
+        base[f->offset] = (UINT8)(pData[0] & 0xFF);
+        break;
+    case 2:
+        base[f->offset]     = (UINT8)(pData[0] & 0xFF);
+        base[f->offset + 1] = (UINT8)((pData[0] >> 8) & 0xFF);
+        break;
+    case 4:
+        base[f->offset]     = (UINT8)(pData[0] & 0xFF);
+        base[f->offset + 1] = (UINT8)((pData[0] >> 8) & 0xFF);
+        base[f->offset + 2] = (UINT8)(pData[1] & 0xFF);
+        base[f->offset + 3] = (UINT8)((pData[1] >> 8) & 0xFF);
+        break;
+    case 16:
+        for (i = 0; i < 16; i++)
+        {
+            base[f->offset + i] = ((const UINT8 *)pData)[i];
+        }
+        break;
+    default:
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    return 0;
+}
+
+UINT8 ECAT_Read_0x2000_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Read((const UINT8 *)&Tool_Spec0x2000, sSdoFields0x2000, 12, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Write_0x2000_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Write((UINT8 *)&Tool_Spec0x2000, sSdoFields0x2000, 12, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Read_0x2010_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Read((const UINT8 *)&Maintenance_Cal0x2010, sSdoFields0x2010, 5, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Write_0x2010_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Write((UINT8 *)&Maintenance_Cal0x2010, sSdoFields0x2010, 5, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Read_0x2021_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Read((const UINT8 *)&Rundown0x2021, sSdoFields0x2021, 12, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Write_0x2021_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Write((UINT8 *)&Rundown0x2021, sSdoFields0x2021, 12, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Read_0x2022_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Read((const UINT8 *)&Snug0x2022, sSdoFields0x2022, 15, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Write_0x2022_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Write((UINT8 *)&Snug0x2022, sSdoFields0x2022, 15, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Read_0x2023_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Read((const UINT8 *)&Loosen0x2023, sSdoFields0x2023, 10, subindex, dataSize, pData);
+}
+
+UINT8 ECAT_Write_0x2023_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index;
+    if (bCompleteAccess != 0)
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    return SdoField_Write((UINT8 *)&Loosen0x2023, sSdoFields0x2023, 10, subindex, dataSize, pData);
+}
+
+/* C12 §5.4: CRC-32/ISO-HDLC 实现在 Motion_Control/DOCH_cyclic_sync_position.c（宿主可对拍）。 */
+extern uint32_t Pset_Crc32_Calc(const uint8_t * p, uint16_t len);
+
+/* TODO(OPEN-7): Pset 通道按 SDO 写 0x2030:01 整串；这里只接收并记录长度 */
+/* S2/M2/P1: 0x2030:01 可变长度上传（Architect 硬问题 2）
+ * entry desc 固定 1528 B，但主站要读回“实际收到的 Pset 长度 + 内容”（含 0x4402 CRC）。
+ * 做法：第一次 OBJ_Read 回调返回 ABORTIDX_WORKING（SSC 挂起，pStoreData 里只记下邮箱数据区
+ * 指针）；COE_Main 再次回调本函数，用 SDOS_SdoRes(0, 实际长度, 缓冲) 以实际 objLength
+ * 生成响应，从而 CompleteSize = 实际长度（1..1528），未收到数据时为 0。
+ *
+ * 缓冲归属（SSC 5.13 的坑，P1 v1 曾踩中）：
+ * - 第一次回调里的 pData 是收到请求的邮箱内部数据区，可用空间只有一个邮箱帧
+ *   （u16SendMbxSize - MBX_HEADER_SIZE - UPLOAD_NORM_RES_SIZE，128 B 邮箱时 = 112 B），
+ *   所以第一次回调不能往里拷 Pset，否则 148 B 及以上会写穿邮箱块。
+ * - SDOS_SdoRes 遇到 objLength > 单帧容量会做分段上传，并把传入的 pData 直接存成
+ *   pSdoSegData，分段结束后由 SSC 对 pSdoSegData 调 FREEMEM。传邮箱内部指针（不是
+ *   ALLOCMEM 得到的块起始地址）就会在分段结束时 free 一个非法指针，破坏堆。
+ *   因此 > 单帧容量时必须传 ALLOCMEM 的整段缓冲（SSC 负责释放），<= 单帧容量直接传 pData。
+ */
+UINT8 ECAT_Read_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    UINT16 len = Pset_Buffer_Length0x2030;
+    UINT16 segLimit;
+    UINT16 i;
+
+    (void)index;
+    (void)dataSize;
+
+    if ((bCompleteAccess != 0u) || (subindex != 0u))
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+
+    /* 第一次（SDOS handler 内）：只挂起，不拷贝（pData 容量只有一个邮箱帧） */
+    if (pSdoPendFunc == NULL)
+    {
+        return ABORTIDX_WORKING;
+    }
+
+    if (len > 1528u)
+    {
+        len = 1528u;
+    }
+
+    /* 单帧可容纳的 Pset 字节数；邮箱未初始化时按 0 处理，强制走分段缓冲，避免误判 */
+    if (u16SendMbxSize > (UINT16)(MBX_HEADER_SIZE + UPLOAD_NORM_RES_SIZE))
+    {
+        segLimit = (UINT16)(u16SendMbxSize - (UINT16)(MBX_HEADER_SIZE + UPLOAD_NORM_RES_SIZE));
+    }
+    else
+    {
+        segLimit = 0u;
+    }
+
+    /* 第二次（COE_Main 内）：按实际长度生成上传响应 */
+    if (len <= segLimit)
+    {
+        for (i = 0u; i < len; i++)
+        {
+            ((UINT8 *)pData)[i] = Pset_buffer0x2030[i];
+        }
+        SDOS_SdoRes(0u, (UINT32)len, pData);
+    }
+    else
+    {
+        UINT8 *pSegBuf = (UINT8 *)ALLOCMEM(ROUNDUPBYTE2WORD(len));
+
+        if (pSegBuf == NULL)
+        {
+            return ABORTIDX_OUT_OF_MEMORY;
+        }
+        for (i = 0u; i < len; i++)
+        {
+            pSegBuf[i] = Pset_buffer0x2030[i];
+        }
+        /* 分段上传：SSC 把 pSegBuf 记为 pSdoSegData，最后一个 segment 后 FREEMEM 释放 */
+        SDOS_SdoRes(0u, (UINT32)len, (UINT16 MBXMEM *)pSegBuf);
+    }
+    return 0u;
+}
+
+UINT8 ECAT_Write_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    UINT32 i;
+    uint32_t primask;
+    uint32_t crc;
+    (void)index;
+    if ((bCompleteAccess != 0) || (subindex != 0))
+    {
+        return ABORTIDX_UNSUPPORTED_ACCESS;
+    }
+    if ((dataSize == 0) || (dataSize > 1528))
+    {
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    /* CRC 在关中断前计算，临界区只做准入、复制和提交。 */
+    crc = dataSize >= 3u ? Pset_Crc32_Calc((const UINT8 *)pData, (UINT16)dataSize) : 0u;
+    /* 邮箱主循环与同步 ISR 共用参数缓冲；原子准入并提交，活动程序保持不可变。 */
+    primask = __get_PRIMASK();
+    __disable_irq();
+    if (Pset_IsRunning())
+    {
+        __set_PRIMASK(primask);
+        return ABORTIDX_IN_THIS_STATE_DATA_CANNOT_BE_READ_OR_STORED;
+    }
+    for (i = 0; i < dataSize; i++)
+    {
+        Pset_buffer0x2030[i] = ((const UINT8 *)pData)[i];
+    }
+    Pset_Buffer_Length0x2030 = (UINT16)dataSize;
+    /* S2/C12 §5.4: 先写 CRC，最后写 length 作提交标志（单 owner 读 length->CRC）；
+     * 长度 <3 B 视为无效（契约：length 有效范围 3..1528，0=无效/无 Pset）。
+     * 0x2031:01=3 复位不清这两个值（Architect 2026-10-24 更正：它们描述最后一次收到的 Pset）。 */
+    if (dataSize >= 3u)
+    {
+        Pset_CRC32_0x2039 = crc;
+        __asm__ __volatile__("" ::: "memory");
+        Pset_Length_0x203A = (UINT16)dataSize;
+    }
+    else
+    {
+        Pset_CRC32_0x2039 = 0u;
+        __asm__ __volatile__("" ::: "memory");
+        Pset_Length_0x203A = 0u;
+    }
+    /* S2/M2: 仅打标记，解析/执行在下一个 1 ms tick（避免邮箱上下文长循环） */
+    Pset_OnBufferReceived((uint16_t)dataSize);
+    __DMB();
+    __set_PRIMASK(primask);
+    return 0;
+}
+
+UINT8 ECAT_Read_0x2210_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index; (void)subindex; (void)dataSize; (void)bCompleteAccess;
+    *pData = SWAPWORD((UINT16)Spd_Loop_Kp0x2210);
+    return 0;
+}
+
+UINT8 ECAT_Write_0x2210_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    INT16 newValue;
+    (void)index; (void)subindex; (void)bCompleteAccess;
+    if (dataSize != 2)
+    {
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    newValue = (INT16)SWAPWORD(*pData);
+    if (newValue < 0)
+    {
+        return ABORTIDX_VALUE_TOO_SMALL; /* Kp 不允许为负 */
+    }
+    Spd_Loop_Kp0x2210 = newValue;
+    return 0;
+}
+
+UINT8 ECAT_Read_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    (void)index; (void)subindex; (void)dataSize; (void)bCompleteAccess;
+    *pData = SWAPWORD((UINT16)Spd_Loop_Ti0x2211);
+    return 0;
+}
+
+UINT8 ECAT_Write_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
+{
+    INT16 newValue;
+    (void)index; (void)subindex; (void)bCompleteAccess;
+    if (dataSize != 2)
+    {
+        return ABORTIDX_PARAM_LENGTH_ERROR;
+    }
+    newValue = (INT16)SWAPWORD(*pData);
+    if (newValue < 0)
+    {
+        return ABORTIDX_VALUE_TOO_SMALL; /* Ti 不允许为负 */
+    }
+    Spd_Loop_Ti0x2211 = newValue;
+    return 0;
+}
+
+/* S2/M2: 1 ms 引擎访问对象字段的访问器（避免 Motion 层依赖 TOBJ 结构体类型） */
+UINT8 App_JobCtrl_GetControl(void)
+{
+    return Job_Pset_Ctrl0x2031.control;
+}
+
+void App_JobCtrl_SetControl(UINT8 v)
+{
+    Job_Pset_Ctrl0x2031.control = v;   /* 命令锁存消费后清 0，主站可重复下发 */
+}
+
+UINT8 App_JobCtrl_GetPsetNo(void)
+{
+    return Job_Pset_Ctrl0x2031.pset_no;
+}
+
+UINT32 App_Tool_GetMaxTorque_mNm(void)
+{
+    return Tool_Spec0x2000.max_torque;   /* 0x2000:03，mN·m；扭矩换算基准 */
+}
+
+/* S2/M2-R1: 链路/看门狗联锁（Architect R1）
+ * 只有 AL 状态 = OP 且 ESC 过程数据看门狗未过期时，工步引擎才允许运动。
+ * 看门狗语义（与 SSC CheckIfEcatError 一致）：ESC 0x0440 bit0 = 1 表示看门狗仍在被触发/未过期；
+ * bit0 = 0 表示过程数据看门狗已过期（SSC 自身会把 AL 拉回 SAFEOP 并报 0x001B）。
+ * 注意：不依赖 TxPDO 的任何位；AL/SM 看门狗是协议状态机给出的硬条件。
+ */
+UINT8 App_Link_IsOperational(void)
+{
+    UINT16 wd_status = 0u;
+
+    /* nAlStatus 定义在 ecatslv.c；STATE_MASK/STATE_OP 来自 ecatslv.h */
+    if ((nAlStatus & STATE_MASK) != STATE_OP)
+    {
+        return 0u;
+    }
+
+    /* ESC_PD_WD_STATE = 0x0440，ESC_PD_WD_TRIGGER_MASK = 0x0001（esc.h） */
+    HW_EscReadWord(wd_status, ESC_PD_WD_STATE);
+    wd_status = SWAPWORD(wd_status);
+
+    if ((wd_status & ESC_PD_WD_TRIGGER_MASK) == 0u)
+    {
+        return 0u;   /* 过程数据看门狗过期 */
+    }
+    return 1u;
+}
+
 void APPL_Application(void)
 {
-//	process_app(&OUT_GENERIC0x7000, &IN_GENERIC0x6000);
+    /* 1 ms 模拟模型（Motion_Control/DOCH_cyclic_sync_position.c） */
+    SimulatedSlave_Tick();
+
+    /* 0x2001 遥测快照（SDO 读取；0x2209 不再进 PDO，v2 §3.1/§5.2） */
+    Telemetry0x2002.current     = current_sample0x2208;
+    Telemetry0x2002.temperature = temperature_sample0x2209;
+    /* TODO(OPEN-2): 母线电压/STO 目前为固定模拟值 */
+    Telemetry0x2002.bus_voltage = 0u; /* simulation: unavailable */
+    Telemetry0x2002.sto_state   = 0u;
 }
+
 
 #if EXPLICIT_DEVICE_ID
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -714,44 +1182,6 @@ UINT8 ECAT_Read_0x2100_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, U
  \return    result of the read operation (0 (success) or an abort code (ABORTIDX_.... defined in
             sdosrv.h))
  *////////////////////////////////////////////////////////////////////////////////////////
-UINT8 ECAT_Read_0x2200_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
-{
-	*pData = SWAPWORD((UINT16)Spd_Loop_Kp0x2200);
- return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-/**
-\param     index               index of the requested object.
-\param     subindex            subindex of the requested object.
-\param     objSize             size of the requested object data, calculated with OBJ_GetObjectLength
-\param     pData               Pointer to the buffer where the data can be copied to
-\param     bCompleteAccess     Indicates if a complete read of all subindices of the
-                               object shall be done or not
-
- \return    result of the read operation (0 (success) or an abort code (ABORTIDX_.... defined in
-            sdosrv.h))
- *////////////////////////////////////////////////////////////////////////////////////////
-UINT8 ECAT_Read_0x2201_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
-{
-	*pData = SWAPWORD((UINT16)Spd_Loop_Ti0x2201);
- return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-/**
-\param     index               index of the requested object.
-\param     subindex            subindex of the requested object.
-\param     objSize             size of the requested object data, calculated with OBJ_GetObjectLength
-\param     pData               Pointer to the buffer where the data can be copied to
-\param     bCompleteAccess     Indicates if a complete read of all subindices of the
-                               object shall be done or not
-
- \return    result of the read operation (0 (success) or an abort code (ABORTIDX_.... defined in
-            sdosrv.h))
- *////////////////////////////////////////////////////////////////////////////////////////
 UINT8 ECAT_Write_0x2100_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
 {
 	INT16 newValue;
@@ -773,86 +1203,6 @@ UINT8 ECAT_Write_0x2100_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, 
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////
-/**
-\param     index               index of the requested object.
-\param     subindex            subindex of the requested object.
-\param     objSize             size of the requested object data, calculated with OBJ_GetObjectLength
-\param     pData               Pointer to the buffer where the data can be copied to
-\param     bCompleteAccess     Indicates if a complete read of all subindices of the
-                               object shall be done or not
-
- \return    result of the read operation (0 (success) or an abort code (ABORTIDX_.... defined in
-            sdosrv.h))
- *////////////////////////////////////////////////////////////////////////////////////////
-UINT8 ECAT_Write_0x2200_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
-{
-	INT16 newValue;
-
-	/*SSC V5.13 接管模式：框架不会把邮箱数据写入变量，必须手动从 pData 取值并完成写入*/
-
-	/*长度校验：0x2200 为 INT16（2字节）*/
-	if (dataSize != 2)
-	{
-		return ABORTIDX_PARAM_LENGTH_ERROR; /* 0x0E -> 0x06070010h */
-	}
-
-	/*从邮箱缓冲区取出待写入值（小端平台 SWAPWORD 为空操作）*/
-	newValue = (INT16)SWAPWORD(*pData);
-
-	/*参数范围检查：速度环 Kp 不允许为负*/
-	if (newValue < 0)
-	{
-		return ABORTIDX_VALUE_TOO_SMALL; /* 0x14 -> 0x06090011h Value too small */
-	}
-
-	/*写入对象字典变量并同步到运动控制参数结构*/
-	Spd_Loop_Kp0x2200 = newValue;
-//	Axis.Spd_Loop_Kp  = newValue;
-
-	return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-/**
-\param     index               index of the requested object.
-\param     subindex            subindex of the requested object.
-\param     objSize             size of the requested object data, calculated with OBJ_GetObjectLength
-\param     pData               Pointer to the buffer where the data can be copied to
-\param     bCompleteAccess     Indicates if a complete read of all subindices of the
-                               object shall be done or not
-
- \return    result of the read operation (0 (success) or an abort code (ABORTIDX_.... defined in
-            sdosrv.h))
- *////////////////////////////////////////////////////////////////////////////////////////
-UINT8 ECAT_Write_0x2201_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess)
-{
-	INT16 newValue;
-
-	/*SSC V5.13 接管模式：框架不会把邮箱数据写入变量，必须手动从 pData 取值并完成写入*/
-
-	/*长度校验：0x2201 为 INT16（2字节）*/
-	if (dataSize != 2)
-	{
-		return ABORTIDX_PARAM_LENGTH_ERROR; /* 0x0E -> 0x06070010h */
-	}
-
-	/*从邮箱缓冲区取出待写入值（小端平台 SWAPWORD 为空操作）*/
-	newValue = (INT16)SWAPWORD(*pData);
-
-	/*参数范围检查：速度环 Ti 不允许为负（0 表示关闭积分作用）*/
-	if (newValue < 0)
-	{
-		return ABORTIDX_VALUE_TOO_SMALL; /* 0x14 -> 0x06090011h Value too small */
-	}
-
-	/*写入对象字典变量并同步到运动控制参数结构*/
-	Spd_Loop_Ti0x2201 = newValue;
-//	Axis.Spd_Loop_Ti  = newValue;
-
-	return 0;
-}
 #if USE_DEFAULT_MAIN
 /////////////////////////////////////////////////////////////////////////////////////////
 /**

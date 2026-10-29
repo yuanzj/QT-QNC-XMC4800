@@ -289,7 +289,8 @@ void IRQHandler_PosCtrl_125us(void)
 			PassNumber = 0;
 		break;
 	}
-    Position_actual_value0x6064 = Target_position0x607A;
+    /* FPGA_SIM: feedback is owned by the isolated simulator, not direct target echo. */
+    /* Position_actual_value0x6064 = Target_position0x607A; */
     Modes_of_operation_display0x6061 = Modes_of_operation0x6060;
 
     Cur_Loop_IdKp0x2302 = Cur_Loop_IqKp0x2300;
