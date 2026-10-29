@@ -58,7 +58,11 @@ python -X utf8 -m unittest discover -s tests -p "test_*.py" -v
 
 保留客户 `.project`，修正 `.cproject` 的工作区/头文件路径，并将 `tests/tools/build/evidence` 排除出 DAVE 编译。使用独立 DAVE 工作区导入，避免与同名客户原项目冲突。
 
-本轮验证的是上述命令行构建，尚未签认 DAVE 内编译、自动代码生成或 IDE 单步。调试必须使用本次构建的 ELF；暂停 CPU 会影响 EtherCAT 周期，调试窗口与正常运行窗口分开记录。不要用新 ELF 的符号解释其他固件。
+已在 DAVE 4.5.0 内完成 Release/Debug 编译，并用 DAVE Debug 固件实板验证硬件断点、F6 单步、调用栈和变量读取。另用带空格的新路径、全新工作区、不携带构建缓存重新导入编译，HEX 一致。操作步骤与证据摘要见 [DAVE客户导入与断点调试说明](docs/DAVE客户导入与断点调试说明_20261030.md)。DAVE 自动代码生成尚未验证。
+
+`Debug/Release` 是 IDE 自动生成的缓存，不再跟踪；客户原始标签仍完整保留原交付文件。命令行构建使用 `tools/source-list.json` 固定清单，避免被 IDE 重写缓存影响。若增加编译单元，DAVE会自动发现，命令行入口还需同步更新该清单。
+
+调试必须使用板上同一份固件的 ELF。暂停 CPU 会影响 EtherCAT 周期；IDE 终止后也可能停在复位入口，须按说明恢复 CPU 和 UIO 从站，再进行业务测试。
 
 ## 验证边界
 
