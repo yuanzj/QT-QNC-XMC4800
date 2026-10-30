@@ -3,5 +3,15 @@
 /build/
 /evidence/
 __pycache__/
-*.pyc
 *.local.launch
+
+# DAVE 自动生成的工作区缓存与求解器日志，不参与编译
+.metadata/
+solver.log
+solver.bak
+
+# 本机系统及 Python 运行缓存
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.py[cod]
