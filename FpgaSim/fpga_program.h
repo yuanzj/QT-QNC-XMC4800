@@ -10,9 +10,13 @@
 #define FPGA_MODEL_ENCODER 8388608LL
 #define FPGA_MODEL_GEAR 30LL
 #define FPGA_MODEL_FULL_SCALE_MNM 30000LL
-/* 0正常，1扭矩NOK，2角度NOK，3超时，4未知故障；在构建清单中标记场景。 */
+/* 0正常，1扭矩NOK，2角度NOK，3超时，4未知故障，5原始位置边界向量。
+ * 场景5仅检验数据链路，不是运动算法；在构建清单中显式标记。 */
 #ifndef FPGA_SIM_SCENARIO
 #define FPGA_SIM_SCENARIO 0
+#endif
+#if FPGA_SIM_SCENARIO < 0 || FPGA_SIM_SCENARIO > 5
+#error Unsupported FPGA_SIM_SCENARIO
 #endif
 
 typedef struct {

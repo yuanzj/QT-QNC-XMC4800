@@ -72,6 +72,23 @@ static void fault(FpgaProgramRun *run, uint32_t code)
     run->velocity_inc_s = 0;
 }
 
+#if FPGA_SIM_SCENARIO == 5
+/* C类原始PDO位置输入：不做有符号溢出运算，不改变参数、故障或启停判定。
+ * 单步拧紧在300ms从一侧边界跳到另一侧；多步在工步边界切换符号。
+ * 非拧紧步置0用于跨步归零对照，速度置0避免把跳变当物理运动。 */
+static void inject_position_vector(FpgaProgramRun *run, const FpgaProgramStep *step, uint32_t elapsed)
+{
+    int32_t position = 2147483000L;
+    if (step->kind != 3) position = 0;
+    else {
+        if (step->direction == 1) position = -position;
+        if (run->program.count == 1 && elapsed >= 300) position = -position;
+    }
+    run->position_inc = position;
+    run->velocity_inc_s = 0;
+}
+#endif
+
 void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
 {
     const FpgaProgramStep *step;
@@ -124,6 +141,9 @@ void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
         run->position_inc = (int32_t)((int64_t)run->step_origin_inc + (int64_t)position * progress / duration);
         run->velocity_inc_s = elapsed < duration ? (int32_t)velocity : 0;
     }
+#if FPGA_SIM_SCENARIO == 5
+    inject_position_vector(run, step, elapsed);
+#endif
     if (elapsed < duration) return;
     run->result = ok;
     if (!ok) run->all_ok = 0;
