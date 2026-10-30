@@ -16,8 +16,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--gcc', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--scenario', type=int, choices=range(6), default=0,
-                        help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4故障/5原始位置边界；不修改UIO')
+    parser.add_argument('--scenario', type=int, choices=range(7), default=0,
+                        help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4同拍故障/5位置边界/6提前20ms故障；不修改UIO')
     args = parser.parse_args()
     gcc = Path(args.gcc).resolve()
     out = Path(args.output).resolve()

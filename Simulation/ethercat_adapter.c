@@ -92,6 +92,11 @@ void Simulation_Tick(void)
     }
     FpgaProgram_Tick(&simulator, now, permitted);
     if (simulator.state == FPGA_SIM_FAULT) status_code0x2200 = simulator.fault_code;
+#if FPGA_SIM_SCENARIO == 6
+    /* 仅提前故障测试镜像在活动步输出测试码；默认镜像及同拍场景不改变时序。 */
+    if (simulator.state == FPGA_SIM_RUNNING && simulator.fault_code != 0)
+        status_code0x2200 = simulator.fault_code;
+#endif
     status_code20x2201 = 0;
     if (simulator.state == FPGA_SIM_RUNNING) {
         pset_echo0x220B = (uint16_t)(((uint16_t)simulator.program.pset_no << 8) | simulator.current_step);

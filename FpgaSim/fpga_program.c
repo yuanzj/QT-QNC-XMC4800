@@ -118,6 +118,14 @@ void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
         if (FPGA_SIM_SCENARIO == 2) angle_cdeg = step->max_angle_cdeg + 100;
         if (FPGA_SIM_SCENARIO == 3 && step->timeout_ms) duration = step->timeout_ms + 1;
         if (FPGA_SIM_SCENARIO == 4 && elapsed >= 100) { fault(run, 0x7001); return; }
+#if FPGA_SIM_SCENARIO == 6
+        /* C类对照：先在活动工步保持故障20ms，再以与场景4相同的失败边沿收口。
+         * 只改变测试故障的出现时刻，不把UIO漏码通过延迟默认模型来掩盖。 */
+        if (elapsed >= 100) {
+            run->fault_code = 0x7001;
+            if (elapsed >= 120) { fault(run, 0x7001); return; }
+        }
+#endif
         ok = torque_mnm >= step->min_torque_mnm && torque_mnm <= step->max_torque_mnm &&
              angle_cdeg >= step->min_angle_cdeg && angle_cdeg <= step->max_angle_cdeg;
     }

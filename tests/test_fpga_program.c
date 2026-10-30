@@ -77,7 +77,7 @@ int main(void)
 
     FpgaProgram_Reset(&run);assert(FpgaProgram_Load(&run,&snug));assert(FpgaProgram_Start(&run,0,1));
     FpgaProgram_Tick(&run,1000,1);
-#if FPGA_SIM_SCENARIO == 4
+#if FPGA_SIM_SCENARIO == 4 || FPGA_SIM_SCENARIO == 6
     assert(run.state==FPGA_SIM_FAULT && run.fault_code==0x7001 && !run.result);
 #elif FPGA_SIM_SCENARIO == 1 || FPGA_SIM_SCENARIO == 2
     assert(run.state==FPGA_SIM_DONE && !run.result);
