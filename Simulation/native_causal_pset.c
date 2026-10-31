@@ -12,8 +12,10 @@ uint8_t NativePset_Decode(const uint8_t *p,uint16_t length,FpgaProgram *program)
     memset(&candidate,0,sizeof(candidate));candidate.pset_no=p[0];candidate.count=p[2];
     for(i=0;i<candidate.count;i++){
         const uint8_t *s;uint16_t size;FpgaProgramStep *step=&candidate.steps[i];
-        if((uint32_t)cursor+3>length)return 0;s=p+cursor;size=u16(s+1);
-        if((uint32_t)cursor+size>length)return 0;step->kind=s[0];
+        if((uint32_t)cursor+3>length)return 0;
+        s=p+cursor;size=u16(s+1);
+        if((uint32_t)cursor+size>length)return 0;
+        step->kind=s[0];
         if(s[0]==3){
             unsigned offset;
             if(size!=61||s[3]<1||s[3]>4||s[40]>1||s[47]>1||s[48]>1||s[49]!=1||s[50]!=1||s[55]!=2||s[56]<1||s[56]>2||s[57]!=0)return 0;
@@ -49,6 +51,7 @@ uint8_t NativePset_Decode(const uint8_t *p,uint16_t length,FpgaProgram *program)
         }else return 0;
         cursor=(uint16_t)(cursor+size);
     }
-    if(cursor!=length)return 0;*program=candidate;return 1;
+    if(cursor!=length)return 0;
+    *program=candidate;return 1;
 }
 #endif
