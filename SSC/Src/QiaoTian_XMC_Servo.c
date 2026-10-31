@@ -450,7 +450,9 @@ void APPL_InputMapping(UINT16* pData)
     /* 0x1C/0x20/0x24 三个 32 位填充（PDO 0x0000） */
     p[28] = 0; p[29] = 0; p[30] = 0; p[31] = 0;
     p[32] = 0; p[33] = 0; p[34] = 0; p[35] = 0;
+#if SIMULATION_TX_PDO_BYTES == 40
     p[36] = 0; p[37] = 0; p[38] = 0; p[39] = 0;
+#endif
 }
 
 

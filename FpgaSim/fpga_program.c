@@ -89,6 +89,23 @@ static void inject_position_vector(FpgaProgramRun *run, const FpgaProgramStep *s
 }
 #endif
 
+#if FPGA_SIM_SCENARIO == 8
+/* C类原始量向量：仅替换过程采样值，不代表合法工具运动或判定算法。
+ * 每100ms一段，覆盖INT16/INT32极值、零、小正负值和峰值；不做溢出算术。
+ * 不受方向参数翻转，停机和联锁仍优先，不改变默认场景。 */
+static void inject_raw_integer_vector(FpgaProgramRun *run, uint32_t elapsed)
+{
+    static const int16_t torque[] = {INT16_MIN, -1, 0, 1, INT16_MAX, 1000, 0, 123, 2000, 0};
+    static const int32_t position[] = {INT32_MIN, -1, 0, 1, INT32_MAX, 8388608, 0, -8388608, 4194304, 0};
+    static const int32_t velocity[] = {INT32_MIN, -1, 0, 1, INT32_MAX, 8388608, 0, -8388608, 4194304, 0};
+    uint32_t index = elapsed / 100U;
+    if (index > 9U) index = 9U;
+    run->torque_raw = torque[index];
+    run->position_inc = position[index];
+    run->velocity_inc_s = velocity[index];
+}
+#endif
+
 void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
 {
     const FpgaProgramStep *step;
@@ -151,6 +168,9 @@ void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
     }
 #if FPGA_SIM_SCENARIO == 5
     inject_position_vector(run, step, elapsed);
+#endif
+#if FPGA_SIM_SCENARIO == 8
+    if (step->kind == 3) inject_raw_integer_vector(run, elapsed);
 #endif
     if (elapsed < duration) return;
     run->result = ok;

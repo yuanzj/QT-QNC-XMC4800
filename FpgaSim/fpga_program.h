@@ -11,11 +11,11 @@
 #define FPGA_MODEL_GEAR 30LL
 #define FPGA_MODEL_FULL_SCALE_MNM 30000LL
 /* 0正常，1扭矩NOK，2角度NOK，3超时，4故障与结束同拍，5原始位置边界，
- * 6故障提前20ms上报后结束。5/6仅检验数据链路，在构建清单中显式标记。 */
+ * 6故障提前20ms上报后结束，7错误36B-TxPDO映射，8原始整数极值。5/6/7/8仅用于显式测试，非生产算法。 */
 #ifndef FPGA_SIM_SCENARIO
 #define FPGA_SIM_SCENARIO 0
 #endif
-#if FPGA_SIM_SCENARIO < 0 || FPGA_SIM_SCENARIO > 6
+#if FPGA_SIM_SCENARIO < 0 || FPGA_SIM_SCENARIO > 8
 #error Unsupported FPGA_SIM_SCENARIO
 #endif
 
