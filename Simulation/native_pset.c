@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <string.h>
 
+#if FPGA_SIM_SCENARIO != 9
 static uint16_t u16(const uint8_t *p) { return (uint16_t)(p[0] | ((uint16_t)p[1] << 8)); }
 static uint32_t u32(const uint8_t *p) { return p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24); }
 
@@ -94,3 +95,5 @@ uint8_t NativePset_Decode(const uint8_t *p, uint16_t length, FpgaProgram *progra
     *program = candidate;
     return 1;
 }
+
+#endif

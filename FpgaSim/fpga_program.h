@@ -10,13 +10,10 @@
 #define FPGA_MODEL_ENCODER 8388608LL
 #define FPGA_MODEL_GEAR 30LL
 #define FPGA_MODEL_FULL_SCALE_MNM 30000LL
-/* 0正常，1扭矩NOK，2角度NOK，3超时，4故障与结束同拍，5原始位置边界，
- * 6故障提前20ms上报后结束，7错误36B-TxPDO映射，8原始整数极值。5/6/7/8仅用于显式测试，非生产算法。 */
-#ifndef FPGA_SIM_SCENARIO
-#define FPGA_SIM_SCENARIO 0
-#endif
-#if FPGA_SIM_SCENARIO < 0 || FPGA_SIM_SCENARIO > 8
-#error Unsupported FPGA_SIM_SCENARIO
+/* 0~8为旧C类测试向量；9为独立负载反馈的功能参考模型。 */
+#include "../Simulation/model_config.h"
+#if FPGA_SIM_SCENARIO == 9
+#include "feedback_model.h"
 #endif
 
 typedef struct {
@@ -24,6 +21,11 @@ typedef struct {
     uint32_t duration_ms, timeout_ms;
     int32_t torque_mnm, angle_cdeg;
     int32_t min_torque_mnm, max_torque_mnm, min_angle_cdeg, max_angle_cdeg;
+#if FPGA_SIM_SCENARIO == 9
+    uint32_t speed_rpm_milli, safe_torque_mnm, safe_angle_cdeg, angle_threshold_mnm;
+    uint16_t accel_time_ms, post_delay_ms;
+    uint8_t strategy, torque_value_mode, angle_value_mode, torque_reset;
+#endif
 } FpgaProgramStep;
 
 typedef struct {
@@ -38,6 +40,13 @@ typedef struct {
     uint8_t current_step, result, all_ok, pending_next;
     int16_t torque_raw;
     int32_t position_inc, velocity_inc_s, step_origin_inc;
+#if FPGA_SIM_SCENARIO == 9
+    ModelPlantState plant;
+    int64_t angle_gate_q;
+    int32_t peak_torque_mnm, peak_angle_cdeg, measured_torque_mnm, measured_angle_cdeg;
+    uint32_t last_tick_ms, brake_started_ms, delay_started_ms;
+    uint8_t gate_open, braking, completing, torque_hit, angle_hit, step_nok_reason, last_nok_reason;
+#endif
 } FpgaProgramRun;
 
 void FpgaProgram_Reset(FpgaProgramRun *run);

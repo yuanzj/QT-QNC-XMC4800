@@ -13,6 +13,8 @@ uint8_t FpgaProgram_Convert(int32_t torque_mnm, int32_t angle_cdeg, int16_t *tor
     return 1;
 }
 
+#if FPGA_SIM_SCENARIO != 9
+/* 保留旧C类场景供传输回归，不用于参数生效或真实工况结论。 */
 void FpgaProgram_Reset(FpgaProgramRun *run)
 {
     memset(run, 0, sizeof(*run));
@@ -184,3 +186,5 @@ void FpgaProgram_Tick(FpgaProgramRun *run, uint32_t now_ms, uint8_t permitted)
         run->finished_ms = now_ms;
     }
 }
+
+#endif

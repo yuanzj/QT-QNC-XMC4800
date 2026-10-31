@@ -3,9 +3,7 @@
  * Test-only logical boundary, not a production protocol revision. */
 #ifndef SIMULATION_TEST_MAPPING_H
 #define SIMULATION_TEST_MAPPING_H
-#ifndef FPGA_SIM_SCENARIO
-#define FPGA_SIM_SCENARIO 0
-#endif
+#include "model_config.h"
 #if FPGA_SIM_SCENARIO == 7
 #define SIMULATION_TX_PDO_ENTRY_COUNT 12
 #define SIMULATION_TX_PDO_BYTES 36

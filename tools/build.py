@@ -16,8 +16,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--gcc', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--scenario', type=int, choices=range(9), default=0,
-                        help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4同拍故障/5位置边界/6提前20ms故障/7错误36B-TxPDO/8原始整数极值；不修改UIO')
+    parser.add_argument('--scenario', type=int, choices=range(10), default=9,
+                        help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4同拍故障/5位置边界/6提前20ms故障/7错误36B-TxPDO/8原始整数极值/9独立合成接头；不修改UIO')
+    parser.add_argument('--joint', choices=['hard','soft','free-run','jam'], default='hard', help='场景9独立合成夹具，不是实物标定数据')
     args = parser.parse_args()
     gcc = Path(args.gcc).resolve()
     out = Path(args.output).resolve()
@@ -33,7 +34,7 @@ def main():
                 'Motion_Control', 'ProbeScope', 'Dave/Generated', 'Libraries']
     arch = ['-mfloat-abi=softfp', '-mfpu=fpv4-sp-d16', '-mcpu=cortex-m4', '-mthumb']
     flags = ['-DXMC4800_F144x2048', '-DFPGA_SIM_SCENARIO=' + str(args.scenario),
-             '-Os', '-g3', '-ffunction-sections', '-fdata-sections', '-Wall', *arch]
+             '-DFPGA_MODEL_PROFILE=' + str(['hard','soft','free-run','jam'].index(args.joint)+1), '-fstack-usage', '-Os', '-g3', '-ffunction-sections', '-fdata-sections', '-Wall', *arch]
     flags += ['-I' + str(source / name) for name in includes]
     commands = []
     for name in objects:
@@ -63,6 +64,8 @@ def main():
                         'xmc4800.elf', 'xmc4800.hex'], cwd=out, stdout=log, stderr=subprocess.STDOUT, check=True)
     inputs = {p.relative_to(source).as_posix(): sha(p) for p in sorted(source.rglob('*')) if p.is_file()}
     manifest = {'device': 'XMC4800-2048', 'example': 'expert-logic-model-v2', 'scenario': args.scenario, 'inputs': inputs,
+                'feedback_source': 'synthetic-independent-joint' if args.scenario==9 else 'synthetic-protocol-vector',
+                'joint_profile': args.joint if args.scenario==9 else None, 'physical_calibration': False,
                 'compiler': subprocess.check_output([str(gcc), '--version'], text=True).splitlines()[0],
                 'recipe_sha256': sha(Path(__file__)),
                 'artifacts': {n: sha(out / n) for n in ['xmc4800.elf', 'xmc4800.hex']}}
