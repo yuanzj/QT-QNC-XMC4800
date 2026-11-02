@@ -26,7 +26,7 @@ uint8_t NativePset_Decode(const uint8_t *p,uint16_t length,FpgaProgram *program)
             step->direction=s[40];step->speed_rpm_milli=u32(s+41);step->accel_time_ms=u16(s+45);
             step->torque_value_mode=s[47];step->angle_value_mode=s[48];step->angle_reset=s[49];step->torque_reset=s[50];
             step->timeout_ms=u16(s+51);step->post_delay_ms=u16(s+53);step->failure_action=s[56];
-            if(!step->speed_rpm_milli||step->speed_rpm_milli>500000||!step->timeout_ms||step->max_torque_mnm>30000||step->min_torque_mnm>step->max_torque_mnm||step->min_angle_cdeg>step->max_angle_cdeg||step->max_angle_cdeg>=307200||step->angle_cdeg>=307200)return 0;
+            if(!step->speed_rpm_milli||step->speed_rpm_milli>FPGA_MODEL_MAX_RPM_MILLI||!step->timeout_ms||step->max_torque_mnm>30000||step->min_torque_mnm>step->max_torque_mnm||step->min_angle_cdeg>step->max_angle_cdeg||step->max_angle_cdeg>=307200||step->angle_cdeg>=307200)return 0;
             if(step->strategy!=2 && (step->torque_mnm<=0||step->torque_mnm>30000))return 0;
             if(step->strategy!=1 && step->angle_cdeg<=0)return 0;
             if((step->strategy==1||step->strategy==4) && step->safe_angle_cdeg>=307200)return 0;
@@ -38,13 +38,13 @@ uint8_t NativePset_Decode(const uint8_t *p,uint16_t length,FpgaProgram *program)
             step->torque_mnm=(int32_t)u32(s+10);step->timeout_ms=u16(s+14);step->post_delay_ms=u16(s+16);
             step->angle_cdeg=(int32_t)u32(s+24);step->safe_torque_mnm=u32(s+28);step->angle_threshold_mnm=u32(s+32);
             step->angle_reset=1;step->torque_reset=1;step->failure_action=2;step->max_torque_mnm=30000;step->max_angle_cdeg=307199;
-            if(!step->speed_rpm_milli||step->speed_rpm_milli>500000||!step->timeout_ms||!step->angle_cdeg)return 0;
+            if(!step->speed_rpm_milli||step->speed_rpm_milli>FPGA_MODEL_MAX_RPM_MILLI||!step->timeout_ms||!step->angle_cdeg)return 0;
         }else if(s[0]==5){
             if(size!=26||!u32(s+3)||u32(s+3)>30000||u32(s+7)>30000||!u32(s+11)||u32(s+11)>=307200||s[25]!=2)return 0;
             step->strategy=2;step->direction=1;step->max_torque_mnm=(int32_t)u32(s+3);step->max_angle_cdeg=307199;
             step->angle_threshold_mnm=u32(s+7);step->angle_cdeg=(int32_t)u32(s+11);step->speed_rpm_milli=u32(s+15);step->accel_time_ms=u16(s+19);
             step->timeout_ms=u16(s+21);step->post_delay_ms=u16(s+23);step->failure_action=2;step->angle_reset=1;step->torque_reset=1;
-            if(!step->speed_rpm_milli||step->speed_rpm_milli>500000||!step->timeout_ms)return 0;
+            if(!step->speed_rpm_milli||step->speed_rpm_milli>FPGA_MODEL_MAX_RPM_MILLI||!step->timeout_ms)return 0;
         }else if(s[0]==4){
             if(size!=13||s[3]!=0||s[6]!=0||s[7]!=0||!u16(s+4)||u16(s+4)>5000||u16(s+8)<u16(s+4)||s[12]<1||s[12]>2)return 0;
             step->duration_ms=u16(s+4);step->timeout_ms=u16(s+8);step->post_delay_ms=u16(s+10);step->failure_action=s[12];

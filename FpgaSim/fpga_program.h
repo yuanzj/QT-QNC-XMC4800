@@ -39,7 +39,12 @@ typedef struct {
     uint32_t step_started_ms, finished_ms, fault_code;
     uint8_t current_step, result, all_ok, pending_next;
     int16_t torque_raw;
+#if FPGA_SIM_INT64
+    int32_t position_inc, step_origin_inc;
+    int64_t velocity_inc_s;
+#else
     int32_t position_inc, velocity_inc_s, step_origin_inc;
+#endif
 #if FPGA_SIM_SCENARIO == 9
     ModelPlantState plant;
     int64_t angle_gate_q;

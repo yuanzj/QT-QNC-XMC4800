@@ -1,0 +1,125 @@
+{
+  "scope": "synthetic reference; compile/host verified only; not flashed",
+  "pdo_map_ver": 4,
+  "tx_assignment": "0x1C13:01=0x1A00",
+  "tx_bytes": 44,
+  "rx_bytes": 12,
+  "endianness": "little",
+  "encoder_resolution": 8388608,
+  "gear_ratio": 30,
+  "max_speed_rpm": 1000,
+  "max_speed_sdo": "0x2000:04",
+  "max_speed_sdo_value": 1000000,
+  "velocity_object": "0x2212:00",
+  "velocity_unit": "motor_inc_per_second",
+  "standard_606c_type": "INT32",
+  "standard_606c_valid_object": "0x2213:00",
+  "standard_606c_overflow_abort": "0x08000022",
+  "entries": [
+    {
+      "subindex": 1,
+      "mapping": "0x22000020",
+      "offset": 0,
+      "bytes": 4,
+      "name": "status_code",
+      "type": "UINT32"
+    },
+    {
+      "subindex": 2,
+      "mapping": "0x22010020",
+      "offset": 4,
+      "bytes": 4,
+      "name": "status_code2",
+      "type": "UINT32"
+    },
+    {
+      "subindex": 3,
+      "mapping": "0x60770010",
+      "offset": 8,
+      "bytes": 2,
+      "name": "torque_actual",
+      "type": "INT16"
+    },
+    {
+      "subindex": 4,
+      "mapping": "0x60410010",
+      "offset": 10,
+      "bytes": 2,
+      "name": "statusword",
+      "type": "UINT16"
+    },
+    {
+      "subindex": 5,
+      "mapping": "0x60640020",
+      "offset": 12,
+      "bytes": 4,
+      "name": "position_actual",
+      "type": "INT32"
+    },
+    {
+      "subindex": 6,
+      "mapping": "0x22120040",
+      "offset": 16,
+      "bytes": 8,
+      "name": "velocity_actual",
+      "type": "INT64"
+    },
+    {
+      "subindex": 7,
+      "mapping": "0x220B0010",
+      "offset": 24,
+      "bytes": 2,
+      "name": "pset_step_echo",
+      "type": "UINT16"
+    },
+    {
+      "subindex": 8,
+      "mapping": "0x220C0008",
+      "offset": 26,
+      "bytes": 1,
+      "name": "step_echo",
+      "type": "UINT8"
+    },
+    {
+      "subindex": 9,
+      "mapping": "0x220D0008",
+      "offset": 27,
+      "bytes": 1,
+      "name": "step_result",
+      "type": "UINT8"
+    },
+    {
+      "subindex": 10,
+      "mapping": "0x22080020",
+      "offset": 28,
+      "bytes": 4,
+      "name": "current_sample",
+      "type": "INT32"
+    },
+    {
+      "subindex": 11,
+      "mapping": "0x00000020",
+      "offset": 32,
+      "bytes": 4,
+      "name": "reserved_0",
+      "type": "UINT32"
+    },
+    {
+      "subindex": 12,
+      "mapping": "0x00000020",
+      "offset": 36,
+      "bytes": 4,
+      "name": "reserved_1",
+      "type": "UINT32"
+    },
+    {
+      "subindex": 13,
+      "mapping": "0x00000020",
+      "offset": 40,
+      "bytes": 4,
+      "name": "reserved_2",
+      "type": "UINT32"
+    }
+  ],
+  "logical_hmi_copy_warning": "Physical pset_step_echo packs low=step high=pset; HMI job/temperature/token/cycle/src are NOT these reserved words. UIO must build its logical sample."
+}

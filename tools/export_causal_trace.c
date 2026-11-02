@@ -33,13 +33,18 @@ int main(int argc,char **argv){
  }else if(!strcmp(argv[1],"release")){
   uint8_t *w=p+64;p[2]=2;length=90;w[0]=5;u16(w+1,26);u32(w+3,20000);u32(w+11,500);u32(w+15,30000);u16(w+21,2000);w[25]=2;
  }
+ if(!strncmp(argv[1],"speed1000-",10)||!strcmp(argv[1],"position1000-overflow")){
+  s[3]=2;u32(s+8,!strcmp(argv[1],"speed1000-hard")?14000:30000);u32(s+12,0);u32(s+16,0);u32(s+20,0);
+  u32(s+24,0);u32(s+28,307199);u32(s+32,0);u32(s+36,!strcmp(argv[1],"position1000-overflow")?300000:60000);
+  s[40]=!strcmp(argv[1],"speed1000-reverse");u32(s+41,1000000);u16(s+45,100);
+ }
  out=fopen(argv[2],"wb");assert(out);assert(fwrite(p,1,length,out)==length);fclose(out);
  assert(NativePset_Decode(p,length,&program));FpgaProgram_Reset(&run);assert(FpgaProgram_Load(&run,&program));assert(FpgaProgram_Start(&run,0,1));
  puts("time_ms,fixture_angle_q,monitor_angle_cdeg,torque_raw,position_inc,velocity_inc_s,feedback_rpm_milli,state,step,result,all_ok,fault_code,braking,torque_hit,angle_hit");
  for(t=0;t<7000;t++){
   if(t==250&&!strcmp(argv[1],"stop"))FpgaProgram_Stop(&run);
   FpgaProgram_Tick(&run,t,1);
-  printf("%u,%lld,%ld,%d,%ld,%ld,%ld,%u,%u,%u,%u,%lu,%u,%u,%u\n",t,(long long)run.plant.position_q,(long)run.measured_angle_cdeg,run.torque_raw,(long)run.position_inc,(long)run.velocity_inc_s,(long)run.plant.velocity_rpm_milli,run.state,run.current_step,run.result,run.all_ok,(unsigned long)run.fault_code,run.braking,run.torque_hit,run.angle_hit);
+  printf("%u,%lld,%ld,%d,%ld,%lld,%ld,%u,%u,%u,%u,%lu,%u,%u,%u\n",t,(long long)run.plant.position_q,(long)run.measured_angle_cdeg,run.torque_raw,(long)run.position_inc,(long long)run.velocity_inc_s,(long)run.plant.velocity_rpm_milli,run.state,run.current_step,run.result,run.all_ok,(unsigned long)run.fault_code,run.braking,run.torque_hit,run.angle_hit);
   if(run.state!=FPGA_SIM_RUNNING){if(!ended)ended=t;if(t>=ended+50)break;}
  }
  assert(ended);return 0;

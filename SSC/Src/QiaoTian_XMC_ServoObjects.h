@@ -16,6 +16,8 @@
 \brief NOTE : This file will be overwritten if a new object dictionary is generated!<br>
 */
 
+#include "Simulation/test_mapping.h"
+
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
 #define PROTO
 #else
@@ -246,7 +248,12 @@ OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x1A00[] = {
 /**
 * \brief Object/Entry names
 */
-OBJCONST UCHAR OBJMEM aName0x1A00[] = "TxPDO 40B\000"
+OBJCONST UCHAR OBJMEM aName0x1A00[] =
+#if FPGA_SIM_INT64
+"TxPDO INT64 44B\000"
+#else
+"TxPDO 40B\000"
+#endif
 "SubIndex 001\000"
 "SubIndex 002\000"
 "SubIndex 003\000"
@@ -292,7 +299,7 @@ TOBJ1A00;
 
 PROTO TOBJ1A00 TxPDO1CSPCSV0x1A00
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={SIMULATION_TX_PDO_ENTRY_COUNT,0x22000020,0x22010020,0x60770010,0x60410010,0x60640020,0x606C0020,0x220B0010,0x220C0008,0x220D0008,0x22080020,0x00000020,0x00000020,0x00000020}
+={SIMULATION_TX_PDO_ENTRY_COUNT,0x22000020,0x22010020,0x60770010,0x60410010,0x60640020,SIMULATION_VELOCITY_MAP_ENTRY,0x220B0010,0x220C0008,0x220D0008,0x22080020,0x00000020,0x00000020,0x00000020}
 #endif
 ;
 /** @}*/
@@ -1779,6 +1786,27 @@ OBJCONST UCHAR OBJMEM aName0x606C[] = "Velocity_actual_value\000\377";
 * \brief Object variable
 */
 PROTO INT32 Velocity_actual_value0x606C;
+#if FPGA_SIM_INT64
+/* 厂商对象，不改变标准0x606C类型；读回调在主循环中原子快照ISR发布值。 */
+#ifdef _OBJD_
+OBJCONST TSDOINFOENTRYDESC OBJMEM sEntryDesc0x2212 = { DEFTYPE_INTEGER64, 0x40, ACCESS_READ | OBJACCESS_TXPDOMAPPING };
+OBJCONST UCHAR OBJMEM aName0x2212[] = "Velocity_actual_64\000\377";
+OBJCONST TSDOINFOENTRYDESC OBJMEM sEntryDesc0x2213 = { DEFTYPE_UNSIGNED8, 0x08, ACCESS_READ };
+OBJCONST UCHAR OBJMEM aName0x2213[] = "Velocity_606C_valid\000\377";
+#endif
+#include <stdint.h>
+PROTO int64_t Velocity_actual_64_0x2212;
+PROTO UINT8 Velocity_606C_valid0x2213
+#ifdef _QIAO_TIAN__XMC__SERVO_
+=1
+#endif
+;
+PROTO UINT8 ECAT_Read_0x2212_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess);
+PROTO UINT8 ECAT_Read_0x606C_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess);
+#define SIMULATION_606C_READ_CALLBACK ECAT_Read_0x606C_Callback
+#else
+#define SIMULATION_606C_READ_CALLBACK NULL
+#endif
 /** @}*/
 
 
@@ -3208,7 +3236,7 @@ TOBJ2000;
 */
 PROTO TOBJ2000 Tool_Spec0x2000
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={12,"QIAOTIAN-TW-0001",1,30000,500000,60,0,1000000,0,5000000,1000,0,0}
+={12,"QIAOTIAN-TW-0001",1,30000,FPGA_MODEL_MAX_RPM_MILLI,60,0,1000000,0,5000000,1000,0,0}
 #endif
 ;
 /** @}*/
@@ -4005,6 +4033,10 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 {NULL , NULL ,  0x220D , {DEFTYPE_UNSIGNED8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x220D , aName0x220D , &step_result0x220D , NULL , NULL , 0x0000 },
 {NULL , NULL ,  0x2210 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2210 , aName0x2210 , &Spd_Loop_Kp0x2210 , ECAT_Read_0x2210_Callback , ECAT_Write_0x2210_Callback , 0x0000 },
 {NULL , NULL ,  0x2211 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2211 , aName0x2211 , &Spd_Loop_Ti0x2211 , ECAT_Read_0x2211_Callback , ECAT_Write_0x2211_Callback , 0x0000 },
+#if FPGA_SIM_INT64
+{NULL , NULL , 0x2212 , {DEFTYPE_INTEGER64 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2212 , aName0x2212 , &Velocity_actual_64_0x2212 , ECAT_Read_0x2212_Callback , NULL , 0x0000 },
+{NULL , NULL , 0x2213 , {DEFTYPE_UNSIGNED8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2213 , aName0x2213 , &Velocity_606C_valid0x2213 , NULL , NULL , 0x0000 },
+#endif
 
 /* Object 0x2300 */
 {NULL , NULL ,  0x2300 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2300 , aName0x2300 , &Cur_Loop_IqKp0x2300 , NULL , NULL , 0x0000 },
@@ -4053,7 +4085,7 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x606B */
 {NULL , NULL ,  0x606B , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606B , aName0x606B , &Velocity_demand_value0x606B , NULL , NULL , 0x0000 },
 /* Object 0x606C */
-{NULL , NULL ,  0x606C , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606C , aName0x606C , &Velocity_actual_value0x606C , NULL , NULL , 0x0000 },
+{NULL , NULL ,  0x606C , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606C , aName0x606C , &Velocity_actual_value0x606C , SIMULATION_606C_READ_CALLBACK , NULL , 0x0000 },
 /* Object 0x606D */
 {NULL , NULL ,  0x606D , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606D , aName0x606D , &Velocity_window0x606D , NULL , NULL , 0x0000 },
 /* Object 0x606E */

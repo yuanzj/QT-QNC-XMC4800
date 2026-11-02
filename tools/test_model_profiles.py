@@ -37,30 +37,45 @@ def main():
         print(label, 'PASS', flush=True)
     causal = ['tests/test_causal_model.c', 'FpgaSim/fpga_program.c', 'FpgaSim/feedback_model.c',
               'FpgaSim/fpga_control_model.c', 'Simulation/native_causal_pset.c']
-    for profile in [1, 2, 3, 4]:
-        label = 'causal-profile-' + str(profile)
+    for mode, profile in [(m,p) for m in [0,1] for p in [1,2,3,4]]:
+        label = 'causal-profile-' + str(profile) + '-int64-' + str(mode)
         binary = out / label
         command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
-                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_MODEL_PROFILE=' + str(profile)]
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_SIM_INT64='+str(mode), '-DFPGA_MODEL_PROFILE=' + str(profile)]
         command += [str(ROOT / source) for source in causal] + ['-o', str(binary)]
         with (out / (label + '.log')).open('w') as log:
             subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
             subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
-        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'passed': True})
+        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    for mode, profile in [(0,3),(1,3),(1,1)]:
+        label = 'velocity64-mode-' + str(mode) + '-profile-' + str(profile)
+        binary = out / label
+        sources = ['tests/test_velocity64.c', *causal[1:], 'Simulation/ethercat_adapter.c']
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_SIM_INT64='+str(mode), '-DFPGA_MODEL_PROFILE='+str(profile)]
+        command += [str(ROOT / source) for source in sources] + ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
         print(label, 'PASS', flush=True)
     with (out / 'actual-mapping.log').open('w') as log:
         subprocess.run([sys.executable, str(ROOT / 'tools/test_mapping_profile.py'),
                         '--cc', args.cc, '--output', str(out / 'mapping')],
                        stdout=log, stderr=subprocess.STDOUT, check=True)
+    with (out / 'actual-sdo.log').open('w') as log:
+        subprocess.run([sys.executable, str(ROOT / 'tools/test_velocity_sdo.py'), '--cc', args.cc,
+                        '--output', str(out / 'sdo')], stdout=log, stderr=subprocess.STDOUT, check=True)
     with (out / 'flash-boundaries.log').open('w') as log:
         subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests',
                         '-p', 'test_flash_tools.py', '-v'], cwd=ROOT,
                        stdout=log, stderr=subprocess.STDOUT, check=True)
-    report = {'passed': True, 'c_model_runs': results, 'actual_mapping_profiles': [0, 7],
-              'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
+    report = {'passed': True, 'c_model_runs': results, 'actual_mapping_profiles': ['0-legacy','7-legacy-negative','9-legacy','9-int64'],
+              'velocity_sdo_callback_test': True, 'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
               'sanitizers': ['address', 'undefined'], 'hardware_connected': False}
     (out / 'result.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
-    print('16个C运行、2个实际映射配置、3项刷写边界测试通过；不代表实物测试。')
+    print('23个C运行、4个实际映射配置、实际SDO回调、3项刷写边界测试通过；不代表实物测试。')
 
 if __name__ == '__main__':
     main()

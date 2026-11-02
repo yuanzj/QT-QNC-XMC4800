@@ -404,9 +404,37 @@ UINT16 APPL_GenerateMapping_New(UINT16 *pInputSize,UINT16 *pOutputSize)
 \brief      This function will copies the inputs from the local memory to the ESC memory
             to the hardware
 *////////////////////////////////////////////////////////////////////////////////////////
+#if FPGA_SIM_INT64
+UINT8 ECAT_Read_0x2212_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess)
+{
+    UINT64 bits; UINT8 i; uint32_t primask;
+    (void)index;
+    if (bCompleteAccess || subindex) return ABORTIDX_UNSUPPORTED_ACCESS;
+    if (dataSize != 8) return ABORTIDX_PARAM_LENGTH_ERROR;
+    primask = __get_PRIMASK(); __disable_irq();
+    bits = (UINT64)Velocity_actual_64_0x2212;
+    __set_PRIMASK(primask);
+    for (i = 0; i < 8; ++i) ((UINT8 *)pData)[i] = (UINT8)(bits >> (8*i));
+    return 0;
+}
+UINT8 ECAT_Read_0x606C_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess)
+{
+    UINT32 bits; UINT8 valid, i; uint32_t primask;
+    (void)index;
+    if (bCompleteAccess || subindex) return ABORTIDX_UNSUPPORTED_ACCESS;
+    if (dataSize != 4) return ABORTIDX_PARAM_LENGTH_ERROR;
+    primask = __get_PRIMASK(); __disable_irq();
+    valid = Velocity_606C_valid0x2213; bits = (UINT32)Velocity_actual_value0x606C;
+    __set_PRIMASK(primask);
+    if (!valid) return ABORTIDX_IN_THIS_STATE_DATA_CANNOT_BE_READ_OR_STORED;
+    for (i = 0; i < 4; ++i) ((UINT8 *)pData)[i] = (UINT8)(bits >> (8*i));
+    return 0;
+}
+#endif
+
 void APPL_InputMapping(UINT16* pData)
 {
-    /* S2/M1: TxPDO 40 B —— 客户文档表 4-1（v2 §3.1），全部小端逐字节写 */
+    /* 显式物理映射：INT64=44B，legacy=40B，场景7负例=36B。 */
     UINT8 *p = (UINT8 *)pData;
 
     /* 0x00 status_code U32 (0x2200) */
@@ -430,6 +458,16 @@ void APPL_InputMapping(UINT16* pData)
     p[13] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 8) & 0xFF);
     p[14] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 16) & 0xFF);
     p[15] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 24) & 0xFF);
+#if FPGA_SIM_INT64
+    /* map4物理PDO：2212有符号64位，两补码小端，不使用未对齐INT64指针。 */
+    UINT64 velocity_bits = (UINT64)Velocity_actual_64_0x2212;
+    UINT8 i;
+    for (i = 0; i < 8; ++i) p[16+i] = (UINT8)(velocity_bits >> (8*i));
+    p[24] = (UINT8)pset_echo0x220B; p[25] = (UINT8)(pset_echo0x220B >> 8);
+    p[26] = step_echo0x220C; p[27] = step_result0x220D;
+    for (i = 0; i < 4; ++i) p[28+i] = (UINT8)((UINT32)current_sample0x2208 >> (8*i));
+    for (i = 32; i < 44; ++i) p[i] = 0; /* 原三个保留字，不是温度/token/cycle */
+#else
     /* 0x10 velocity_actual I32 (0x606C) */
     p[16] = (UINT8)((UINT32)Velocity_actual_value0x606C & 0xFF);
     p[17] = (UINT8)(((UINT32)Velocity_actual_value0x606C >> 8) & 0xFF);
@@ -452,6 +490,7 @@ void APPL_InputMapping(UINT16* pData)
     p[32] = 0; p[33] = 0; p[34] = 0; p[35] = 0;
 #if SIMULATION_TX_PDO_BYTES == 40
     p[36] = 0; p[37] = 0; p[38] = 0; p[39] = 0;
+#endif
 #endif
 }
 

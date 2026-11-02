@@ -1,6 +1,11 @@
 /* 现有专家PSET到独立逻辑工具模型的适配；保留真实SDO/PDO，不操作实际FPGA或电机。 */
 #include "ethercat_adapter.h"
 #include "native_pset.h"
+#include <limits.h>
+#if FPGA_SIM_INT64
+extern int64_t Velocity_actual_64_0x2212;
+extern uint8_t Velocity_606C_valid0x2213;
+#endif
 
 extern uint32_t HW_GetTimer(void);
 extern uint8_t Pset_buffer0x2030[];
@@ -110,5 +115,12 @@ void Simulation_Tick(void)
     step_result0x220D = simulator.result;
     Torque_actual_value0x6077 = simulator.torque_raw;
     Position_actual_value0x6064 = simulator.position_inc;
+#if FPGA_SIM_INT64
+    Velocity_actual_64_0x2212 = simulator.velocity_inc_s;
+    Velocity_606C_valid0x2213 = simulator.velocity_inc_s >= INT32_MIN && simulator.velocity_inc_s <= INT32_MAX;
+    /* 标准606C仍为INT32。超范围不截断/钳位；SDO回调拒读，PDO使用2212。 */
+    if (Velocity_606C_valid0x2213) Velocity_actual_value0x606C = (int32_t)simulator.velocity_inc_s;
+#else
     Velocity_actual_value0x606C = simulator.velocity_inc_s;
+#endif
 }

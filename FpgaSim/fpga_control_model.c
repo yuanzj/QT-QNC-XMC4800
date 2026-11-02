@@ -11,10 +11,18 @@ static void publish(FpgaProgramRun *r)
     int64_t angle=r->gate_open?(r->plant.position_q-r->angle_gate_q)/(MODEL_ANGLE_Q):0;
     int64_t raw_velocity=(int64_t)r->plant.velocity_rpm_milli*FPGA_MODEL_ENCODER*FPGA_MODEL_GEAR/60000;
     int16_t torque;int32_t position;
-    if(angle<INT32_MIN||angle>INT32_MAX||raw_velocity<INT32_MIN||raw_velocity>INT32_MAX||!FpgaProgram_Convert(r->plant.torque_mnm,(int32_t)angle,&torque,&position)){
+#if FPGA_SIM_INT64
+    /* 位置失效仍发布独立有效速度，故障后的制动反馈不能冻结在上次采样。 */
+    r->velocity_inc_s=raw_velocity;
+#endif
+    if(angle<INT32_MIN||angle>INT32_MAX||
+#if !FPGA_SIM_INT64
+       raw_velocity<INT32_MIN||raw_velocity>INT32_MAX||
+#endif
+       !FpgaProgram_Convert(r->plant.torque_mnm,(int32_t)angle,&torque,&position)){
         r->state=FPGA_SIM_FAULT;r->fault_code=0x7002;r->result=0;r->current_step=0;return;
     }
-    r->torque_raw=torque;r->position_inc=position;r->velocity_inc_s=(int32_t)raw_velocity;
+    r->torque_raw=torque;r->position_inc=position;r->velocity_inc_s=raw_velocity;
     /* 控制器读取与PDO相同的量化传感量，避免潜在值达标但上报值未达标。 */
     r->measured_torque_mnm=magnitude((int32_t)torque)*30;
     r->measured_angle_cdeg=magnitude((int32_t)angle);
