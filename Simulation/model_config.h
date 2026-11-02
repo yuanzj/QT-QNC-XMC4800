@@ -23,9 +23,17 @@
 #if FPGA_SIM_INT64 && FPGA_SIM_SCENARIO != 9
 #error INT64 feedback requires the independent scenario 9 model
 #endif
+#ifndef FPGA_MODEL_IDENTITY_VALID
+#define FPGA_MODEL_IDENTITY_VALID 1
+#endif
+#if FPGA_MODEL_IDENTITY_VALID != 0 && FPGA_MODEL_IDENTITY_VALID != 1
+#error FPGA_MODEL_IDENTITY_VALID must be 0 or 1
+#endif
 #if FPGA_SIM_INT64
+#define FPGA_MODEL_SPEC_CODE 0 /* 未分配正式码，不能把历史模拟值1冒充正式型号。 */
 #define FPGA_MODEL_MAX_RPM_MILLI 1000000UL
 #else
+#define FPGA_MODEL_SPEC_CODE 1 /* 保留旧镜像历史字节，不代表正式码表。 */
 #define FPGA_MODEL_MAX_RPM_MILLI 500000UL
 #endif
 #endif

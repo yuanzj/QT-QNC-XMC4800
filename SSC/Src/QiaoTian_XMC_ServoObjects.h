@@ -1801,6 +1801,18 @@ PROTO UINT8 Velocity_606C_valid0x2213
 =1
 #endif
 ;
+/* 非周期、只读、固定24B厂商型号信息；不改变2000/握手/PDO。 */
+#include "Simulation/model_identity.h"
+#ifdef _OBJD_
+OBJCONST TSDOINFOENTRYDESC OBJMEM sEntryDesc0x2214 = { DEFTYPE_OCTETSTRING, 0xC0, ACCESS_READ };
+OBJCONST UCHAR OBJMEM aName0x2214[] = "Tool_model_identity\000\377";
+#endif
+PROTO UINT8 Tool_model_identity0x2214[SIMULATION_MODEL_IDENTITY_BYTES]
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+=SIMULATION_MODEL_IDENTITY_INITIALIZER
+#endif
+;
+PROTO UINT8 ECAT_Read_0x2214_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess);
 PROTO UINT8 ECAT_Read_0x2212_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess);
 PROTO UINT8 ECAT_Read_0x606C_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess);
 #define SIMULATION_606C_READ_CALLBACK ECAT_Read_0x606C_Callback
@@ -3236,7 +3248,7 @@ TOBJ2000;
 */
 PROTO TOBJ2000 Tool_Spec0x2000
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
-={12,"QIAOTIAN-TW-0001",1,30000,FPGA_MODEL_MAX_RPM_MILLI,60,0,1000000,0,5000000,1000,0,0}
+={12,"QIAOTIAN-TW-0001",FPGA_MODEL_SPEC_CODE,30000,FPGA_MODEL_MAX_RPM_MILLI,60,0,1000000,0,5000000,1000,0,0}
 #endif
 ;
 /** @}*/
@@ -4036,6 +4048,7 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 #if FPGA_SIM_INT64
 {NULL , NULL , 0x2212 , {DEFTYPE_INTEGER64 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2212 , aName0x2212 , &Velocity_actual_64_0x2212 , ECAT_Read_0x2212_Callback , NULL , 0x0000 },
 {NULL , NULL , 0x2213 , {DEFTYPE_UNSIGNED8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2213 , aName0x2213 , &Velocity_606C_valid0x2213 , NULL , NULL , 0x0000 },
+{NULL , NULL , 0x2214 , {DEFTYPE_OCTETSTRING , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2214 , aName0x2214 , &Tool_model_identity0x2214 , ECAT_Read_0x2214_Callback , NULL , 0x0000 },
 #endif
 
 /* Object 0x2300 */

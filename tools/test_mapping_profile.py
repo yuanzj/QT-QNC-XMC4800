@@ -49,6 +49,7 @@ struct Tool {uint16_t count;uint8_t sn[16],model;uint32_t max_torque,max_speed;u
     struct Guard {uint8_t bytes[SIMULATION_TX_PDO_BYTES];uint8_t sentinel[16];} data;
     unsigned bits=0,i;
     assert(tool_spec.max_speed==FPGA_MODEL_MAX_RPM_MILLI);
+    assert(tool_spec.model==FPGA_MODEL_SPEC_CODE);
     memset(&data,0xA5,sizeof(data));
     for(i=0;i<mapping.count;++i) bits+=mapping.entries[i]&255U;
     assert(bits/8==SIMULATION_TX_PDO_BYTES && bits%8==0);

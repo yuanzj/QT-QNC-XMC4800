@@ -431,6 +431,17 @@ UINT8 ECAT_Read_0x606C_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, U
     return 0;
 }
 #endif
+#if FPGA_SIM_INT64
+UINT8 ECAT_Read_0x2214_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM *pData, UINT8 bCompleteAccess)
+{
+    UINT8 i; (void)index;
+    if (bCompleteAccess || subindex) return ABORTIDX_UNSUPPORTED_ACCESS;
+    if (dataSize != SIMULATION_MODEL_IDENTITY_BYTES) return ABORTIDX_PARAM_LENGTH_ERROR;
+    /* 本模拟出厂字段不可写，固定快照；客户动态铭牌需保证读取一致性。 */
+    for (i = 0; i < SIMULATION_MODEL_IDENTITY_BYTES; ++i) ((UINT8 *)pData)[i] = Tool_model_identity0x2214[i];
+    return 0;
+}
+#endif
 
 void APPL_InputMapping(UINT16* pData)
 {

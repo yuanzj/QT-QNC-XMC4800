@@ -67,12 +67,15 @@ def main():
     with (out / 'actual-sdo.log').open('w') as log:
         subprocess.run([sys.executable, str(ROOT / 'tools/test_velocity_sdo.py'), '--cc', args.cc,
                         '--output', str(out / 'sdo')], stdout=log, stderr=subprocess.STDOUT, check=True)
+    with (out / 'model-identity.log').open('w') as log:
+        subprocess.run([sys.executable, str(ROOT / 'tools/test_model_identity.py'), '--cc', args.cc,
+                        '--output', str(out / 'model-identity')], stdout=log, stderr=subprocess.STDOUT, check=True)
     with (out / 'flash-boundaries.log').open('w') as log:
         subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests',
                         '-p', 'test_flash_tools.py', '-v'], cwd=ROOT,
                        stdout=log, stderr=subprocess.STDOUT, check=True)
     report = {'passed': True, 'c_model_runs': results, 'actual_mapping_profiles': ['0-legacy','7-legacy-negative','9-legacy','9-int64'],
-              'velocity_sdo_callback_test': True, 'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
+              'velocity_sdo_callback_test': True, 'model_identity_sdo_profiles': ['unknown','simulation'], 'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
               'sanitizers': ['address', 'undefined'], 'hardware_connected': False}
     (out / 'result.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
     print('23个C运行、4个实际映射配置、实际SDO回调、3项刷写边界测试通过；不代表实物测试。')
