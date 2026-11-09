@@ -30,6 +30,7 @@ def main():
 #include <stdint.h>
 #include <string.h>
 #include "Simulation/test_mapping.h"
+#include "FpgaSim/fpga_program.h"
 typedef uint8_t UINT8;
 typedef uint16_t UINT16;
 typedef uint32_t UINT32;
@@ -55,6 +56,15 @@ struct Tool {uint16_t count;uint8_t sn[16],model;uint32_t max_torque,max_speed;u
     assert(bits/8==SIMULATION_TX_PDO_BYTES && bits%8==0);
     APPL_InputMapping((UINT16*)data.bytes);
     assert(data.bytes[0]==0x78 && data.bytes[1]==0x56 && data.bytes[2]==0x34 && data.bytes[3]==0x12);
+#if FPGA_SIM_SCENARIO == 9
+    Statusword0x6041=0x0677;
+    status_code0x2200=FPGA_SIM_TOOL_UNAVAILABLE;
+    APPL_InputMapping((UINT16*)data.bytes);
+    assert(data.bytes[10]==0x18 && data.bytes[11]==0x02);
+    status_code0x2200=0;
+    APPL_InputMapping((UINT16*)data.bytes);
+    assert(data.bytes[10]==0x77 && data.bytes[11]==0x06);
+#endif
 #if FPGA_SIM_INT64
     {
         const int64_t v[]={4194304000LL,-4194304000LL,2097152000LL,-2097152000LL,INT64_MIN,INT64_MAX};
@@ -62,7 +72,9 @@ struct Tool {uint16_t count;uint8_t sn[16],model;uint32_t max_torque,max_speed;u
             {0,0,0,0x7D,0,0,0,0},{0,0,0,0x83,0xFF,0xFF,0xFF,0xFF},
             {0,0,0,0,0,0,0,0x80},{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x7F}};
         unsigned n;
-        assert(mapping.entries[5]==0x22120040&&SIMULATION_TX_PDO_BYTES==44);
+        assert(mapping.entries[5]==0x22120040);
+        assert(SIMULATION_TX_PDO_BYTES==(FPGA_TEST_TRUNCATE_TXPDO_TAIL?36:44));
+        assert(mapping.count==(FPGA_TEST_TRUNCATE_TXPDO_TAIL?11:13));
         /* MAP_ASSERTS */
         for(n=0;n<6;++n){
             Velocity_actual_64_0x2212=v[n];pset_echo0x220B=0x7A03;step_echo0x220C=3;step_result0x220D=1;current_sample0x2208=-2;
@@ -70,7 +82,7 @@ struct Tool {uint16_t count;uint8_t sn[16],model;uint32_t max_torque,max_speed;u
             assert(memcmp(data.bytes+16,expected[n],8)==0);
             assert(data.bytes[24]==3&&data.bytes[25]==122&&data.bytes[26]==3&&data.bytes[27]==1);
             assert(data.bytes[28]==0xFE&&data.bytes[29]==0xFF&&data.bytes[30]==0xFF&&data.bytes[31]==0xFF);
-            for(i=32;i<44;++i)assert(data.bytes[i]==0);
+            for(i=32;i<SIMULATION_TX_PDO_BYTES;++i)assert(data.bytes[i]==0);
         }
         (void)Velocity_actual_value0x606C;
     }
@@ -83,12 +95,12 @@ struct Tool {uint16_t count;uint8_t sn[16],model;uint32_t max_torque,max_speed;u
 '''
     suffix=suffix.replace('/* MAP_ASSERTS */',map_asserts)
     unit=out/'actual-mapping.c';unit.write_text(prefix+'static const struct Mapping mapping='+initializer+';\n'+'static const struct Tool tool_spec='+tool+';\n'+body+suffix)
-    for scenario,mode in [(0,0),(7,0),(9,0),(9,1)]:
-        binary=out/('mapping-'+str(scenario)+'-'+str(mode))
-        cmd=[args.cc,'-std=c99','-Wall','-Wextra','-Werror','-UNDEBUG','-fsanitize=address,undefined','-DFPGA_SIM_SCENARIO='+str(scenario),'-DFPGA_SIM_INT64='+str(mode),'-I'+str(root),str(unit),'-o',str(binary)]
-        with (out/('scenario-'+str(scenario)+'-'+str(mode)+'.log')).open('w') as log:
+    for scenario,mode,negative in [(0,0,0),(7,0,0),(9,0,0),(9,1,0),(9,1,1)]:
+        binary=out/('mapping-'+str(scenario)+'-'+str(mode)+'-'+str(negative))
+        cmd=[args.cc,'-std=c99','-Wall','-Wextra','-Werror','-UNDEBUG','-fsanitize=address,undefined','-DFPGA_SIM_SCENARIO='+str(scenario),'-DFPGA_SIM_INT64='+str(mode),'-DFPGA_TEST_TRUNCATE_TXPDO_TAIL='+str(negative),'-I'+str(root),str(unit),'-o',str(binary)]
+        with (out/('scenario-'+str(scenario)+'-'+str(mode)+'-'+str(negative)+'.log')).open('w') as log:
             subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=True)
             subprocess.run([str(binary)],stdout=log,stderr=subprocess.STDOUT,check=True)
-        print('Actual mapping and guarded PDO buffer scenario',scenario,'INT64',mode,'PASS')
+        print('Actual mapping and guarded PDO buffer scenario',scenario,'INT64',mode,'negative tail',negative,'PASS')
 
 if __name__=='__main__':main()

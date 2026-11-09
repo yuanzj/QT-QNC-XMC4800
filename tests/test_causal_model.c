@@ -21,6 +21,55 @@ static void frame(uint8_t p[64]){
 static FpgaProgram decode(const uint8_t *p,uint16_t n){FpgaProgram program;assert(NativePset_Decode(p,n,&program));return program;}
 static void start(FpgaProgramRun *r,const FpgaProgram *p){FpgaProgram_Reset(r);assert(FpgaProgram_Load(r,p));assert(FpgaProgram_Start(r,0,1));}
 static unsigned finish(FpgaProgramRun *r,unsigned limit){unsigned t;for(t=1;t<=limit;t++){FpgaProgram_Tick(r,t,1);if(r->state!=FPGA_SIM_RUNNING)return t;}return 0;}
+#if FPGA_MODEL_PROFILE == 1
+static void test_failure_jump(void)
+{
+ uint8_t packet[3+3*96]={9,3,3};
+ FpgaProgram program;
+ FpgaProgramRun run;
+ unsigned n,t;
+ uint8_t visited=0;
+ for(n=0;n<3;n++){
+  uint8_t *step=packet+3+n*96;
+  u32(step,300);u32(step+12,5000);
+  step[20]=(uint8_t)(n+1);step[21]=3;step[22]=1;step[23]=2;
+  u32(step+28,11000);u32(step+32,30000);u32(step+40,1000);
+  u32(step+48,20000);u32(step+52,100000);u32(step+56,30000);
+  u32(step+60,15000);u32(step+76,1);u32(step+80,1);
+ }
+ packet[3+23]=0x33;
+ u32(packet+3+44,2000); /* 独立接头在目标扭矩时低于20°判定窗。 */
+ assert(NativePset_Decode(packet,sizeof(packet),&program));
+ start(&run,&program);
+ for(t=1;t<5000&&run.state==FPGA_SIM_RUNNING;t++){
+  visited|=(uint8_t)(1u<<(run.current_step-1u));
+  FpgaProgram_Tick(&run,t,1);
+ }
+ assert(visited==0x05 && run.state==FPGA_SIM_DONE && !run.result && !run.all_ok);
+ u32(packet+3+44,0);
+ assert(NativePset_Decode(packet,sizeof(packet),&program));
+ start(&run,&program);
+ visited=0;
+ for(t=1;t<5000&&run.state==FPGA_SIM_RUNNING;t++){
+  visited|=(uint8_t)(1u<<(run.current_step-1u));
+  FpgaProgram_Tick(&run,t,1);
+ }
+ assert(visited==0x07 && run.state==FPGA_SIM_DONE && run.result && run.all_ok);
+ packet[3+23]=0x13;
+ assert(!NativePset_Decode(packet,sizeof(packet),&program));
+ packet[3+23]=0x43;
+ assert(!NativePset_Decode(packet,sizeof(packet),&program));
+ packet[3+23]=0x33;
+ packet[3+2*96+23]=0x13;
+ assert(!NativePset_Decode(packet,sizeof(packet),&program));
+ packet[3+23]=2;
+ u32(packet+3+2*96+44,2000);
+ assert(NativePset_Decode(packet,sizeof(packet),&program));
+ start(&run,&program);
+ assert(finish(&run,9000)>0 && run.state==FPGA_SIM_FAULT);
+ assert(run.fault_code==FPGA_SIM_INVALID_FAILURE_JUMP && !run.result);
+}
+#endif
 int main(void){
  uint8_t bytes[64],other[64];FpgaProgram p,q;FpgaProgramRun a,b;unsigned t;
  frame(bytes);p=decode(bytes,64);assert(p.steps[0].speed_rpm_milli==30000&&p.steps[0].strategy==1);
@@ -28,6 +77,7 @@ int main(void){
  other[6]=1;other[60]=1;assert(!NativePset_Decode(other,64,&q)); /* auto adjust未实现明确拒绝 */
  memcpy(other,bytes,64);other[3]=1;assert(!NativePset_Decode(other,64,&q)); /* 未实现认帽不假OK */
 #if FPGA_MODEL_PROFILE == 1
+ test_failure_jump();
  start(&a,&p);t=finish(&a,5000);assert(t==2076&&a.state==FPGA_SIM_DONE&&a.result==1);
  assert(a.torque_raw==414&&a.position_inc==7927234&&a.velocity_inc_s==0); /* 独立1ms积分字面预期 */
  printf("hard-normal ticks=%u raw_torque=%d position=%ld\n",t,a.torque_raw,(long)a.position_inc);
@@ -61,11 +111,21 @@ int main(void){
  {
   uint8_t data[90];uint8_t *st=data+64;frame(data);data[2]=2;memset(st,0,26);st[0]=5;u16(st+1,26);
   u32(st+3,20000);u32(st+11,500);u32(st+15,30000);u16(st+21,2000);st[25]=2;
-  q=decode(data,sizeof(data));start(&b,&q);t=finish(&b,5000);assert(t==2139&&b.result&&b.position_inc==-4404019&&b.measured_angle_cdeg==630&&b.torque_raw<0);
+  q=decode(data,sizeof(data));start(&b,&q);t=finish(&b,5000);
+  assert(t==2139+FPGA_STEP_ORIGIN_WINDOW_MS&&b.result&&b.position_inc==-4404019&&b.measured_angle_cdeg==630&&b.torque_raw<0);
  }
  q=p;q.steps[0].post_delay_ms=50;start(&b,&q);assert(finish(&b,5000)==2126&&b.result);
  start(&b,&p);FpgaProgram_Tick(&b,2001,1);assert(b.state==FPGA_SIM_FAULT&&b.fault_code==0x700A);
- start(&b,&p);b.plant.valid=0;FpgaProgram_Tick(&b,1,1);assert(b.state==FPGA_SIM_FAULT&&b.fault_code==0x700B&&!b.result);
+ start(&b,&p);FpgaProgram_Tick(&b,100,1);assert(b.plant.velocity_rpm_milli==30000);
+ b.plant.valid=0;FpgaProgram_Tick(&b,101,1);
+ assert(b.state==FPGA_SIM_FAULT&&b.fault_code==0x700B&&!b.result);
+ assert(b.plant.velocity_rpm_milli==28000&&b.velocity_inc_s>0);
+ FpgaProgram_Tick(&b,115,1);assert(b.plant.velocity_rpm_milli==0&&b.velocity_inc_s==0);
+ assert(!FpgaProgram_Load(&b,&p));
+ b.plant.valid=1;FpgaProgram_Stop(&b);
+ assert(b.state==FPGA_SIM_FAULT&&!FpgaProgram_Load(&b,&p)&&!FpgaProgram_Start(&b,116,1));
+ FpgaProgram_Reset(&b);assert(FpgaProgram_Load(&b,&p)&&FpgaProgram_Start(&b,0,1));
+ assert(finish(&b,5000)==2076&&b.result);
 #elif FPGA_MODEL_PROFILE == 2
  p.steps[0].speed_rpm_milli=100000;
  p.steps[0].min_angle_cdeg=90000;p.steps[0].max_angle_cdeg=120000;p.steps[0].safe_angle_cdeg=150000;

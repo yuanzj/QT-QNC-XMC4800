@@ -15,7 +15,8 @@ void ModelPlant_Init(ModelPlantState *p, uint8_t profile)
 void ModelPlant_Tick(ModelPlantState *p, int32_t command, uint16_t accel_ms, uint8_t active)
 {
     int32_t delta; int64_t torque, after_seat;
-    if(!p->valid)return;
+    /* 已配置的夹具失去工具反馈后，只允许用原惯性参数进行无动力制动。 */
+    if(!p->valid&&(active||p->config.brake_rpm_milli_per_ms<=0))return;
     if (!active) command=0;
     if (command==0) delta=p->config.brake_rpm_milli_per_ms;
     else delta=accel_ms ? (absolute(command)+(int32_t)accel_ms-1)/(int32_t)accel_ms : 1000000;

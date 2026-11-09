@@ -48,6 +48,83 @@ def main():
             subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
         results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
         print(label, 'PASS', flush=True)
+    for mode in [0,1]:
+        label = 'hmi-mode3-int64-' + str(mode)
+        binary = out / label
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_SIM_INT64='+str(mode)]
+        command += [str(ROOT / source) for source in ['tests/test_hmi_pset.c', *causal[1:]]]
+        command += ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+        label = 'cold-boot-int64-' + str(mode)
+        binary = out / label
+        sources = ['tests/test_cold_boot.c', *causal[1:], 'Simulation/ethercat_adapter.c']
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_SIM_INT64='+str(mode)]
+        command += [str(ROOT / source) for source in sources] + ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    for mode in [0,1]:
+        label = 'terminal-sample-int64-' + str(mode)
+        binary = out / label
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9', '-DFPGA_SIM_INT64='+str(mode)]
+        command += [str(ROOT / source) for source in ['tests/test_terminal_sample.c', *causal[1:], 'Simulation/ethercat_adapter.c']]
+        command += ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    for mode, profile in [(m,p) for m in [0,1] for p in [1,3]]:
+        label = 'engage-loosen-profile-' + str(profile) + '-int64-' + str(mode)
+        binary = out / label
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9',
+                   '-DFPGA_SIM_INT64='+str(mode), '-DFPGA_MODEL_PROFILE='+str(profile)]
+        command += [str(ROOT / source) for source in ['tests/test_engage_loosen.c', *causal[1:]]]
+        command += ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    for mode, profile in [(m,p) for m in [0,1] for p in [1,3]]:
+        label = 'deceleration-profile-' + str(profile) + '-int64-' + str(mode)
+        binary = out / label
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9',
+                   '-DFPGA_SIM_INT64='+str(mode), '-DFPGA_MODEL_PROFILE='+str(profile)]
+        command += [str(ROOT / source) for source in ['tests/test_deceleration.c', *causal[1:]]]
+        command += ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    for mode, profile in [(m,p) for m in [0,1] for p in [1,3]]:
+        label = 'rundown-torque-profile-' + str(profile) + '-int64-' + str(mode)
+        binary = out / label
+        command = [args.cc, '-std=c99', '-Wall', '-Wextra', '-Werror', '-UNDEBUG',
+                   '-fsanitize=address,undefined', '-DFPGA_SIM_SCENARIO=9',
+                   '-DFPGA_SIM_INT64='+str(mode), '-DFPGA_MODEL_PROFILE='+str(profile)]
+        command += [str(ROOT / source) for source in ['tests/test_rundown_torque.c', *causal[1:]]]
+        command += ['-o', str(binary)]
+        with (out / (label+'.log')).open('w') as log:
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True)
+        results.append({'case': label, 'scenario': 9, 'joint_profile': profile, 'int64': mode, 'passed': True})
+        print(label, 'PASS', flush=True)
+    with (out / 'sdo-fields.log').open('w') as log:
+        subprocess.run([sys.executable, str(ROOT / 'tools/test_sdo_fields.py'), '--cc', args.cc,
+                        '--output', str(out / 'sdo-fields')], stdout=log, stderr=subprocess.STDOUT, check=True)
     for mode, profile in [(0,3),(1,3),(1,1)]:
         label = 'velocity64-mode-' + str(mode) + '-profile-' + str(profile)
         binary = out / label
@@ -70,15 +147,23 @@ def main():
     with (out / 'model-identity.log').open('w') as log:
         subprocess.run([sys.executable, str(ROOT / 'tools/test_model_identity.py'), '--cc', args.cc,
                         '--output', str(out / 'model-identity')], stdout=log, stderr=subprocess.STDOUT, check=True)
+    with (out / 'position-fault-vectors.log').open('w') as log:
+        subprocess.run([sys.executable, str(ROOT / 'tools/test_position_fault_vectors.py'), '--cc', args.cc,
+                        '--output', str(out / 'position-fault-vectors')], stdout=log, stderr=subprocess.STDOUT, check=True)
+    with (out / 'sdo-commit-trace.log').open('w') as log:
+        subprocess.run([sys.executable, str(ROOT / 'tools/test_sdo_commit_trace.py'), '--cc', args.cc,
+                        '--output', str(out / 'sdo-commit-trace')], stdout=log, stderr=subprocess.STDOUT, check=True)
     with (out / 'flash-boundaries.log').open('w') as log:
         subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests',
                         '-p', 'test_flash_tools.py', '-v'], cwd=ROOT,
                        stdout=log, stderr=subprocess.STDOUT, check=True)
-    report = {'passed': True, 'c_model_runs': results, 'actual_mapping_profiles': ['0-legacy','7-legacy-negative','9-legacy','9-int64'],
-              'velocity_sdo_callback_test': True, 'model_identity_sdo_profiles': ['unknown','simulation'], 'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
+    report = {'passed': True, 'c_model_runs': results, 'actual_mapping_profiles': ['0-legacy','7-legacy-negative','9-legacy','9-int64','9-int64-negative-tail'],
+              'velocity_sdo_callback_test': True, 'sdo_field_access_test': True, 'model_identity_sdo_profiles': ['unknown','simulation'], 'flash_boundary_tests': 3, 'assertions': '-UNDEBUG',
+              'position_fault_vector_profiles': ['off','forward-wrap','reverse-wrap','step-reset'],
+              'sdo_commit_trace_profiles': ['off', 'on'],
               'sanitizers': ['address', 'undefined'], 'hardware_connected': False}
     (out / 'result.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
-    print('23个C运行、4个实际映射配置、实际SDO回调、3项刷写边界测试通过；不代表实物测试。')
+    print(str(len(results))+'个C运行（含认帽/拧松新回归）、4个位置故障配置、2个SDO提交计数配置、5个实际映射配置、实际SDO回调及字段访问、3项刷写边界测试通过；不代表实物测试。')
 
 if __name__ == '__main__':
     main()

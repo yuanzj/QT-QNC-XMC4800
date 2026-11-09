@@ -3936,13 +3936,13 @@ PROTO TOBJ2032 KB_Cal0x2032
 /**
 * \addtogroup 0x2030 0x2030 | Pset_Buffer
 * @{
-* \brief Object 0x2030 (Pset_Buffer) definition：OCTET_STRING <=1528 B，下载用自定义 Write
+* \brief Object 0x2030 (Pset_Buffer) definition：OCTET_STRING <=1600 B，下载用自定义 Write
 */
 #ifdef _OBJD_
 /**
 * \brief Entry description
 */
-OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2030 = { DEFTYPE_OCTETSTRING , 0x2FC0 , ACCESS_READWRITE };
+OBJCONST TSDOINFOENTRYDESC    OBJMEM sEntryDesc0x2030 = { DEFTYPE_OCTETSTRING , 0x3200 , ACCESS_READWRITE };
 /**
 * \brief Object name
 */
@@ -3950,9 +3950,9 @@ OBJCONST UCHAR OBJMEM aName0x2030[] = "Pset_Buffer\000\377";
 #endif //#ifdef _OBJD_
 
 /**
-* \brief Object variable：1528 B 影子缓冲（M1 只接收，M2 拆步执行）
+* \brief Object variable：1600 B 影子缓冲（M1 只接收，M2 拆步执行）
 */
-PROTO UINT8 Pset_buffer0x2030[1528];
+PROTO UINT8 Pset_buffer0x2030[1600];
 PROTO UINT16 Pset_Buffer_Length0x2030;
 /** @}*/
 

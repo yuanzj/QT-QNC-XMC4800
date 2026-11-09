@@ -22,11 +22,13 @@
 ------
 -----------------------------------------------------------------------------------------*/
 #include "ecat_def.h"
+#include <stddef.h>
 
 #include "applInterface.h"
 /* simulated slave 1 ms model + Pset/工步引擎 (Motion_Control/DOCH_cyclic_sync_position.c) */
 extern void SimulatedSlave_Tick(void);
 #include "DOCH_cyclic_sync_position.h"
+#include "FpgaSim/fpga_program.h"
 
 #define _QIAO_TIAN__XMC__SERVO_ 1
 #include "QiaoTian_XMC_Servo.h"
@@ -447,6 +449,13 @@ void APPL_InputMapping(UINT16* pData)
 {
     /* 显式物理映射：INT64=44B，legacy=40B，场景7负例=36B。 */
     UINT8 *p = (UINT8 *)pData;
+    UINT16 statusword = Statusword0x6041;
+#if FPGA_SIM_SCENARIO == 9
+    if (status_code0x2200 == FPGA_SIM_TOOL_UNAVAILABLE) {
+        /* 清状态机位及目标到达位，报告锁存的工具故障。 */
+        statusword = (UINT16)((statusword & ~(0x006fu | 0x0400u)) | 0x0008u);
+    }
+#endif
 
     /* 0x00 status_code U32 (0x2200) */
     p[0]  = (UINT8)(status_code0x2200 & 0xFF);
@@ -462,8 +471,8 @@ void APPL_InputMapping(UINT16* pData)
     p[8]  = (UINT8)((UINT16)Torque_actual_value0x6077 & 0xFF);
     p[9]  = (UINT8)(((UINT16)Torque_actual_value0x6077 >> 8) & 0xFF);
     /* 0x0A statusword U16 (0x6041) */
-    p[10] = (UINT8)(Statusword0x6041 & 0xFF);
-    p[11] = (UINT8)((Statusword0x6041 >> 8) & 0xFF);
+    p[10] = (UINT8)(statusword & 0xFF);
+    p[11] = (UINT8)((statusword >> 8) & 0xFF);
     /* 0x0C position_actual I32 (0x6064) */
     p[12] = (UINT8)((UINT32)Position_actual_value0x6064 & 0xFF);
     p[13] = (UINT8)(((UINT32)Position_actual_value0x6064 >> 8) & 0xFF);
@@ -477,7 +486,7 @@ void APPL_InputMapping(UINT16* pData)
     p[24] = (UINT8)pset_echo0x220B; p[25] = (UINT8)(pset_echo0x220B >> 8);
     p[26] = step_echo0x220C; p[27] = step_result0x220D;
     for (i = 0; i < 4; ++i) p[28+i] = (UINT8)((UINT32)current_sample0x2208 >> (8*i));
-    for (i = 32; i < 44; ++i) p[i] = 0; /* 原三个保留字，不是温度/token/cycle */
+    for (i = 32; i < SIMULATION_TX_PDO_BYTES; ++i) p[i] = 0; /* 原三个保留字，不是温度/token/cycle */
 #else
     /* 0x10 velocity_actual I32 (0x606C) */
     p[16] = (UINT8)((UINT32)Velocity_actual_value0x606C & 0xFF);
@@ -643,7 +652,7 @@ void process_app(TOBJ7000 *OUT_GENERIC, TOBJ6000 *IN_GENERIC);
    S2/M1: 客户 SDO 对象访问（v2 §4.2/§5）
    - 5 个对象含 U8+U32 混排子索引，32 位条目在 SSC 默认访问下必须 WORD 对齐，
      故注册对象级 Read/Write 回调，按字节偏移打包/解包（SSC ET9300 推荐做法）。
-   - 0x2030:01 为 OCTET_STRING(<=1528 B)，分段 SDO 下载收完后一次性回调 Write。
+   - 0x2030:01 为 OCTET_STRING(<=1600 B)，分段 SDO 下载收完后一次性回调 Write。
    - TODO(OPEN-7): Pset 拆步与执行在 M2；本文件只做接收与长度记录。
    ===================================================================================== */
 typedef struct
@@ -653,73 +662,74 @@ typedef struct
     UINT8  writable;  /* 0 = 只读 */
 } TOBJ_SDOFIELD;
 
+/* SDO逐字段传输尺寸不含C结构体填充；内存地址必须由实际类型计算。 */
 static const TOBJ_SDOFIELD sSdoFields0x2000[12] = {
-    { 16, 2, 0 }  /* sub1 tool_sn */,
-    { 1, 18, 0 }  /* sub2 model */,
-    { 4, 19, 0 }  /* sub3 max_torque */,
-    { 4, 23, 0 }  /* sub4 max_speed */,
-    { 1, 27, 0 }  /* sub5 max_temp */,
-    { 1, 28, 0 }  /* sub6 maintenance */,
-    { 4, 29, 0 }  /* sub7 service_interval */,
-    { 4, 33, 0 }  /* sub8 used_life */,
-    { 4, 37, 0 }  /* sub9 max_life */,
-    { 4, 41, 0 }  /* sub10 torque_cal */,
-    { 4, 45, 0 }  /* sub11 reserved1 */,
-    { 4, 49, 0 }  /* sub12 reserved2 */
+    { 16, offsetof(TOBJ2000, tool_sn), 0 }  /* sub1 tool_sn */,
+    { 1, offsetof(TOBJ2000, model), 0 }  /* sub2 model */,
+    { 4, offsetof(TOBJ2000, max_torque), 0 }  /* sub3 max_torque */,
+    { 4, offsetof(TOBJ2000, max_speed), 0 }  /* sub4 max_speed */,
+    { 1, offsetof(TOBJ2000, max_temp), 0 }  /* sub5 max_temp */,
+    { 1, offsetof(TOBJ2000, maintenance), 0 }  /* sub6 maintenance */,
+    { 4, offsetof(TOBJ2000, service_interval), 0 }  /* sub7 service_interval */,
+    { 4, offsetof(TOBJ2000, used_life), 0 }  /* sub8 used_life */,
+    { 4, offsetof(TOBJ2000, max_life), 0 }  /* sub9 max_life */,
+    { 4, offsetof(TOBJ2000, torque_cal), 0 }  /* sub10 torque_cal */,
+    { 4, offsetof(TOBJ2000, reserved1), 0 }  /* sub11 reserved1 */,
+    { 4, offsetof(TOBJ2000, reserved2), 0 }  /* sub12 reserved2 */
 };
 
 static const TOBJ_SDOFIELD sSdoFields0x2010[5] = {
-    { 1, 2, 1 }  /* sub1 maintenance */,
-    { 4, 3, 1 }  /* sub2 torque_cal */,
-    { 4, 7, 1 }  /* sub3 reserved1 */,
-    { 4, 11, 1 }  /* sub4 reserved2 */,
-    { 4, 15, 1 }  /* sub5 reserved3 */
+    { 1, offsetof(TOBJ2010, maintenance), 1 }  /* sub1 maintenance */,
+    { 4, offsetof(TOBJ2010, torque_cal), 1 }  /* sub2 torque_cal */,
+    { 4, offsetof(TOBJ2010, reserved1), 1 }  /* sub3 reserved1 */,
+    { 4, offsetof(TOBJ2010, reserved2), 1 }  /* sub4 reserved2 */,
+    { 4, offsetof(TOBJ2010, reserved3), 1 }  /* sub5 reserved3 */
 };
 
 static const TOBJ_SDOFIELD sSdoFields0x2021[12] = {
-    { 1, 2, 1 }  /* sub1 mode */,
-    { 4, 3, 1 }  /* sub2 target_angle */,
-    { 4, 7, 1 }  /* sub3 angle_threshold */,
-    { 4, 11, 1 }  /* sub4 target_torque */,
-    { 4, 15, 1 }  /* sub5 safe_torque */,
-    { 4, 19, 1 }  /* sub6 safe_angle */,
-    { 1, 23, 1 }  /* sub7 angle_reset */,
-    { 1, 24, 1 }  /* sub8 torque_reset */,
-    { 1, 25, 1 }  /* sub9 auto_adjust */,
-    { 4, 26, 1 }  /* sub10 speed_adjust_ratio */,
-    { 4, 30, 1 }  /* sub11 auto_sensitivity */,
-    { 4, 34, 1 }  /* sub12 target_brake_ratio */
+    { 1, offsetof(TOBJ2021, mode), 1 }  /* sub1 mode */,
+    { 4, offsetof(TOBJ2021, target_angle), 1 }  /* sub2 target_angle */,
+    { 4, offsetof(TOBJ2021, angle_threshold), 1 }  /* sub3 angle_threshold */,
+    { 4, offsetof(TOBJ2021, target_torque), 1 }  /* sub4 target_torque */,
+    { 4, offsetof(TOBJ2021, safe_torque), 1 }  /* sub5 safe_torque */,
+    { 4, offsetof(TOBJ2021, safe_angle), 1 }  /* sub6 safe_angle */,
+    { 1, offsetof(TOBJ2021, angle_reset), 1 }  /* sub7 angle_reset */,
+    { 1, offsetof(TOBJ2021, torque_reset), 1 }  /* sub8 torque_reset */,
+    { 1, offsetof(TOBJ2021, auto_adjust), 1 }  /* sub9 auto_adjust */,
+    { 4, offsetof(TOBJ2021, speed_adjust_ratio), 1 }  /* sub10 speed_adjust_ratio */,
+    { 4, offsetof(TOBJ2021, auto_sensitivity), 1 }  /* sub11 auto_sensitivity */,
+    { 4, offsetof(TOBJ2021, target_brake_ratio), 1 }  /* sub12 target_brake_ratio */
 };
 
 static const TOBJ_SDOFIELD sSdoFields0x2022[15] = {
-    { 1, 2, 1 }  /* sub1 strategy */,
-    { 4, 3, 1 }  /* sub2 target_torque */,
-    { 4, 7, 1 }  /* sub3 max_torque */,
-    { 4, 11, 1 }  /* sub4 min_torque */,
-    { 4, 15, 1 }  /* sub5 angle_threshold */,
-    { 4, 19, 1 }  /* sub6 min_angle */,
-    { 4, 23, 1 }  /* sub7 max_angle */,
-    { 4, 27, 1 }  /* sub8 safe_angle */,
-    { 4, 31, 1 }  /* sub9 safe_torque */,
-    { 4, 35, 1 }  /* sub10 target_angle */,
-    { 4, 39, 1 }  /* sub11 start_torque */,
-    { 1, 43, 1 }  /* sub12 torque_value_mode */,
-    { 1, 44, 1 }  /* sub13 angle_value_mode */,
-    { 1, 45, 1 }  /* sub14 angle_reset */,
-    { 1, 46, 1 }  /* sub15 torque_reset */
+    { 1, offsetof(TOBJ2022, strategy), 1 }  /* sub1 strategy */,
+    { 4, offsetof(TOBJ2022, target_torque), 1 }  /* sub2 target_torque */,
+    { 4, offsetof(TOBJ2022, max_torque), 1 }  /* sub3 max_torque */,
+    { 4, offsetof(TOBJ2022, min_torque), 1 }  /* sub4 min_torque */,
+    { 4, offsetof(TOBJ2022, angle_threshold), 1 }  /* sub5 angle_threshold */,
+    { 4, offsetof(TOBJ2022, min_angle), 1 }  /* sub6 min_angle */,
+    { 4, offsetof(TOBJ2022, max_angle), 1 }  /* sub7 max_angle */,
+    { 4, offsetof(TOBJ2022, safe_angle), 1 }  /* sub8 safe_angle */,
+    { 4, offsetof(TOBJ2022, safe_torque), 1 }  /* sub9 safe_torque */,
+    { 4, offsetof(TOBJ2022, target_angle), 1 }  /* sub10 target_angle */,
+    { 4, offsetof(TOBJ2022, start_torque), 1 }  /* sub11 start_torque */,
+    { 1, offsetof(TOBJ2022, torque_value_mode), 1 }  /* sub12 torque_value_mode */,
+    { 1, offsetof(TOBJ2022, angle_value_mode), 1 }  /* sub13 angle_value_mode */,
+    { 1, offsetof(TOBJ2022, angle_reset), 1 }  /* sub14 angle_reset */,
+    { 1, offsetof(TOBJ2022, torque_reset), 1 }  /* sub15 torque_reset */
 };
 
 static const TOBJ_SDOFIELD sSdoFields0x2023[10] = {
-    { 1, 2, 1 }  /* sub1 strategy */,
-    { 4, 3, 1 }  /* sub2 target_torque */,
-    { 4, 7, 1 }  /* sub3 max_torque */,
-    { 4, 11, 1 }  /* sub4 min_angle */,
-    { 4, 15, 1 }  /* sub5 max_angle */,
-    { 4, 19, 1 }  /* sub6 safe_torque */,
-    { 4, 23, 1 }  /* sub7 target_angle */,
-    { 4, 27, 1 }  /* sub8 min_torque */,
-    { 4, 31, 1 }  /* sub9 angle_threshold */,
-    { 4, 35, 1 }  /* sub10 safe_angle */
+    { 1, offsetof(TOBJ2023, strategy), 1 }  /* sub1 strategy */,
+    { 4, offsetof(TOBJ2023, target_torque), 1 }  /* sub2 target_torque */,
+    { 4, offsetof(TOBJ2023, max_torque), 1 }  /* sub3 max_torque */,
+    { 4, offsetof(TOBJ2023, min_angle), 1 }  /* sub4 min_angle */,
+    { 4, offsetof(TOBJ2023, max_angle), 1 }  /* sub5 max_angle */,
+    { 4, offsetof(TOBJ2023, safe_torque), 1 }  /* sub6 safe_torque */,
+    { 4, offsetof(TOBJ2023, target_angle), 1 }  /* sub7 target_angle */,
+    { 4, offsetof(TOBJ2023, min_torque), 1 }  /* sub8 min_torque */,
+    { 4, offsetof(TOBJ2023, angle_threshold), 1 }  /* sub9 angle_threshold */,
+    { 4, offsetof(TOBJ2023, safe_angle), 1 }  /* sub10 safe_angle */
 };
 
 static UINT8 SdoField_Read(const UINT8 *base, const TOBJ_SDOFIELD *map,
@@ -925,10 +935,10 @@ extern uint32_t Pset_Crc32_Calc(const uint8_t * p, uint16_t len);
 
 /* TODO(OPEN-7): Pset 通道按 SDO 写 0x2030:01 整串；这里只接收并记录长度 */
 /* S2/M2/P1: 0x2030:01 可变长度上传（Architect 硬问题 2）
- * entry desc 固定 1528 B，但主站要读回“实际收到的 Pset 长度 + 内容”（含 0x4402 CRC）。
+ * entry desc 固定 1600 B，但主站要读回“实际收到的 Pset 长度 + 内容”（含 0x4402 CRC）。
  * 做法：第一次 OBJ_Read 回调返回 ABORTIDX_WORKING（SSC 挂起，pStoreData 里只记下邮箱数据区
  * 指针）；COE_Main 再次回调本函数，用 SDOS_SdoRes(0, 实际长度, 缓冲) 以实际 objLength
- * 生成响应，从而 CompleteSize = 实际长度（1..1528），未收到数据时为 0。
+ * 生成响应，从而 CompleteSize = 实际长度（1..1600），未收到数据时为 0。
  *
  * 缓冲归属（SSC 5.13 的坑，P1 v1 曾踩中）：
  * - 第一次回调里的 pData 是收到请求的邮箱内部数据区，可用空间只有一个邮箱帧
@@ -959,9 +969,9 @@ UINT8 ECAT_Read_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, U
         return ABORTIDX_WORKING;
     }
 
-    if (len > 1528u)
+    if (len > 1600u)
     {
-        len = 1528u;
+        len = 1600u;
     }
 
     /* 单帧可容纳的 Pset 字节数；邮箱未初始化时按 0 处理，强制走分段缓冲，避免误判 */
@@ -1011,7 +1021,7 @@ UINT8 ECAT_Write_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, 
     {
         return ABORTIDX_UNSUPPORTED_ACCESS;
     }
-    if ((dataSize == 0) || (dataSize > 1528))
+    if ((dataSize == 0) || (dataSize > 1600))
     {
         return ABORTIDX_PARAM_LENGTH_ERROR;
     }
@@ -1031,7 +1041,7 @@ UINT8 ECAT_Write_0x2030_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, 
     }
     Pset_Buffer_Length0x2030 = (UINT16)dataSize;
     /* S2/C12 §5.4: 先写 CRC，最后写 length 作提交标志（单 owner 读 length->CRC）；
-     * 长度 <3 B 视为无效（契约：length 有效范围 3..1528，0=无效/无 Pset）。
+     * 长度 <3 B 视为无效（契约：length 有效范围 3..1600，0=无效/无 Pset）。
      * 0x2031:01=3 复位不清这两个值（Architect 2026-10-24 更正：它们描述最后一次收到的 Pset）。 */
     if (dataSize >= 3u)
     {
