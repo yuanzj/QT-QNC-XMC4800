@@ -147,6 +147,16 @@ static void begin_braking(FpgaProgramRun *r,uint32_t now)
 /* 扭矩来自同一固定接头；动作角度只决定每次搜索何时制动，不生成“套上”反馈。 */
 static void engage_tick(FpgaProgramRun *r,const FpgaProgramStep *s,uint32_t now)
 {
+#if FPGA_C20_PROFILE
+    /* Current UIO carries an optional whole-step timeout for socket identify.
+     * Preserve the independent load, total-attempt count and natural braking. */
+    if(s->timeout_ms && (uint32_t)(now-r->step_started_ms)>=s->timeout_ms){
+        r->step_nok_reason=NOK_TIMEOUT;
+        if(!r->braking)begin_braking(r,now);
+        if(r->plant.velocity_rpm_milli==0)complete_after_delay(r,now);
+        return;
+    }
+#endif
     int64_t distance=r->plant.position_q-r->search_origin_q;
     if(distance<0)distance=-distance;
     if(!r->braking){
@@ -266,8 +276,19 @@ static void tick_one(FpgaProgramRun *r,uint32_t now,uint32_t publish_now,uint8_t
 void FpgaProgram_Tick(FpgaProgramRun *r,uint32_t now,uint8_t permitted)
 {
     uint32_t delta=now-r->last_tick_ms;
+#if FPGA_C20_PROFILE /* runtime observation */
+    r->observed_running_ms=0U;
+#endif /* runtime observation */
     /* 不把暂停调试器/漏时基伪装为正常高速完成；上限与证据一起声明。 */
     if(delta>1000){if(r->state==FPGA_SIM_RUNNING)fault(r,0x700A);r->last_tick_ms=now;return;}
-    while(delta--){++r->last_tick_ms;tick_one(r,r->last_tick_ms,now,permitted);}
+    while(delta--){
+#if FPGA_C20_PROFILE /* runtime observation */
+        uint8_t was_running=r->state==FPGA_SIM_RUNNING;
+#endif /* runtime observation */
+        ++r->last_tick_ms;tick_one(r,r->last_tick_ms,now,permitted);
+#if FPGA_C20_PROFILE /* runtime observation */
+        if(was_running)++r->observed_running_ms;
+#endif /* runtime observation */
+    }
 }
 #endif

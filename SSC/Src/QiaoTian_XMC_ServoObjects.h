@@ -17,12 +17,89 @@
 */
 
 #include "Simulation/test_mapping.h"
+#include "Simulation/c20_profile.h"
 
 #if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
 #define PROTO
 #else
 #define PROTO extern
 #endif
+#if FPGA_C20_PROFILE
+/******************************************************************************
+*                    Object 0x1600 : RxPDO1 CSP/CSV
+******************************************************************************/
+
+/**
+* \addtogroup 0x1600 0x1600 | RxPDO1 CSP/CSV
+* @{
+* \brief Object 0x1600 (RxPDO1 CSP/CSV) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - mapped entry 0x20010020<br>
+* SubIndex 2 - mapped entry 0x00000020<br>
+* SubIndex 3 - mapped entry 0x00000020<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x1600[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+#if XMC_QIAOTIAN_20261109
+{ DEFTYPE_UNSIGNED32,32,ACCESS_READ },
+{ DEFTYPE_UNSIGNED32,32,ACCESS_READ },
+{ DEFTYPE_UNSIGNED32,32,ACCESS_READ },
+#endif
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x20010020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* 0x00000020 */
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x1600[] = "RxPDO1 CSP/CSV\000"
+"SubIndex 001\000"
+"SubIndex 002\000"
+"SubIndex 003\000\377";
+#if XMC_QIAOTIAN_20261109
+/* 扩展记录名称使用完整六项。 */
+#undef aName0x1600
+#define aName0x1600 qecRxNames
+OBJCONST UCHAR OBJMEM qecRxNames[]="QEC RxPDO\0""01\0""02\0""03\0""04\0""05\0""06\0\377";
+#endif
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT32 SI1; /* Subindex1 */
+UINT32 SI2; /* Subindex2 */
+UINT32 SI3; /* Subindex3 */
+#if XMC_QIAOTIAN_20261109
+UINT32 SI4,SI5,SI6;
+#endif
+} OBJ_STRUCT_PACKED_END
+TOBJ1600;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ1600 RxPDO1CSPCSV0x1600
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+#if XMC_QIAOTIAN_20261109
+={6,0x60400010,0x607A0020,0x60FF0020,0x60710010,0x60600008,0x20010020}
+#else
+={3,0x20010020,0x00000020,0x00000020}
+#endif
+#endif
+;
+/** @}*/
+
+#else
 /******************************************************************************
 *                    Object 0x1600 : RxPDO1 CSP/CSV
 ******************************************************************************/
@@ -79,6 +156,7 @@ PROTO TOBJ1600 RxPDO1CSPCSV0x1600
 ;
 /** @}*/
 
+#endif
 /******************************************************************************
 *                    Object 0x1601 : RxPDO2 PP
 ******************************************************************************/
@@ -201,6 +279,120 @@ PROTO TOBJ1602 RxPDO3PT0x1602
 
 
 
+#if FPGA_C20_PROFILE
+/******************************************************************************
+*                    Object 0x1A00 : TxPDO 40B
+******************************************************************************/
+
+/**
+* \addtogroup 0x1A00 0x1A00 | TxPDO 40B
+* @{
+* \brief Object 0x1A00 (TxPDO 40B) definition
+*/
+#ifdef _OBJD_
+/**
+* \brief Object entry descriptions<br>
+* <br>
+* SubIndex 0<br>
+* SubIndex 1 - mapped entry 0x22000020<br>
+* SubIndex 2 - mapped entry 0x22010020<br>
+* SubIndex 3 - mapped entry 0x60770010<br>
+* SubIndex 4 - mapped entry 0x60410010<br>
+* SubIndex 5 - mapped entry 0x60640020<br>
+* SubIndex 6 - mapped entry 0x606C0020<br>
+* SubIndex 7 - mapped entry 0x220B0010<br>
+* SubIndex 8 - mapped entry 0x220C0008<br>
+* SubIndex 9 - mapped entry 0x220D0008<br>
+* SubIndex 10 - mapped entry 0x22080020<br>
+* SubIndex 11 - mapped entry 0x00000020<br>
+* SubIndex 12 - mapped entry 0x00000020<br>
+* SubIndex 13 - mapped entry 0x00000020<br>
+*/
+OBJCONST TSDOINFOENTRYDESC    OBJMEM asEntryDesc0x1A00[] = {
+{ DEFTYPE_UNSIGNED8 , 0x8 , ACCESS_READ },
+#if XMC_QIAOTIAN_20261109
+{ DEFTYPE_UNSIGNED32,32,ACCESS_READ },
+#endif
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22010020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60770010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60410010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x60640020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x606C0020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220B0010 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220C0008 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x220D0008 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x22080020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }, /* 0x00000020 */
+{ DEFTYPE_UNSIGNED32 , 0x20 , ACCESS_READWRITE }}; /* 0x00000020 */
+
+/**
+* \brief Object/Entry names
+*/
+OBJCONST UCHAR OBJMEM aName0x1A00[] = "TxPDO 40B\000"
+"SubIndex 001\000"
+"SubIndex 002\000"
+"SubIndex 003\000"
+"SubIndex 004\000"
+"SubIndex 005\000"
+"SubIndex 006\000"
+"SubIndex 007\000"
+"SubIndex 008\000"
+"SubIndex 009\000"
+"SubIndex 010\000"
+"SubIndex 011\000"
+"SubIndex 012\000"
+"SubIndex 013\000"
+#if XMC_QIAOTIAN_20261109
+"SubIndex 014\000"
+#endif
+"\377";
+#endif //#ifdef _OBJD_
+
+#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+/**
+* \brief Object structure
+*/
+typedef struct OBJ_STRUCT_PACKED_START {
+UINT16 u16SubIndex0;
+UINT32 SI1; /* Subindex1 */
+UINT32 SI2; /* Subindex2 */
+UINT32 SI3; /* Subindex3 */
+UINT32 SI4; /* Subindex4 */
+UINT32 SI5; /* Subindex5 */
+UINT32 SI6; /* Subindex6 */
+UINT32 SI7; /* Subindex7 */
+UINT32 SI8; /* Subindex8 */
+UINT32 SI9; /* Subindex9 */
+UINT32 SI10; /* Subindex10 */
+UINT32 SI11; /* Subindex11 */
+UINT32 SI12; /* Subindex12 */
+UINT32 SI13; /* Subindex13 */
+#if XMC_QIAOTIAN_20261109
+UINT32 SI14;
+#endif
+} OBJ_STRUCT_PACKED_END
+TOBJ1A00;
+#endif //#ifndef _QIAO_TIAN__XMC__SERVO_OBJECTS_H_
+
+/**
+* \brief Object variable
+*/
+PROTO TOBJ1A00 TxPDO1CSPCSV0x1A00
+#if defined(_QIAO_TIAN__XMC__SERVO_) && (_QIAO_TIAN__XMC__SERVO_ == 1)
+#if XMC_QIAOTIAN_20261109
+={14,0x60410010,0x603F0010,0x60640020,0x606C0020,0x60770010,0x2F000120,0x2F000220,0x2F000320,0x2F000440,0x2F000510,0x2F000608,0x2F000708,0x2F000820,0x2F000920}
+#elif UIO_HMI_WIRE_VERSION == 6
+={13,0x22000020,0x22010020,0x60770010,0x60410010,0x60640020,0x22120040,0x220B0010,0x220C0008,0x220D0008,0x22080020,0x00000020,0x00000020,0x00000020}
+#else
+={13,0x22000020,0x22010020,0x60770010,0x60410010,0x60640020,0x606C0020,0x220B0010,0x220C0008,0x220D0008,0x22080020,0x00000020,0x00000020,0x00000020}
+#endif
+#endif
+;
+/** @}*/
+
+#else
 /******************************************************************************
 *                    Object 0x1A00 : TxPDO 40B
 ******************************************************************************/
@@ -304,6 +496,7 @@ PROTO TOBJ1A00 TxPDO1CSPCSV0x1A00
 ;
 /** @}*/
 
+#endif
 /******************************************************************************
 *                    Object 0x1A01 : TxPDO2 PP
 ******************************************************************************/
@@ -3977,16 +4170,27 @@ PROTO UINT8 ECAT_Read_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataS
 PROTO UINT8 ECAT_Write_0x2211_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, UINT16 MBXMEM * pData, UINT8 bCompleteAccess);
 
 
+#if FPGA_C20_PROFILE
+#include "qiaotian_od.h"
+#endif
 #ifdef _OBJD_
 TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x1600 */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x1600,{DEFTYPE_PDOMAPPING,6|(OBJCODE_REC<<8)},asEntryDesc0x1600,aName0x1600,&RxPDO1CSPCSV0x1600,NULL,NULL,0},
+#else
 {NULL , NULL ,  0x1600 , {DEFTYPE_PDOMAPPING , 3 | (OBJCODE_REC << 8)} , asEntryDesc0x1600 , aName0x1600 , &RxPDO1CSPCSV0x1600 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x1601 */
 {NULL , NULL ,  0x1601 , {DEFTYPE_PDOMAPPING , 6 | (OBJCODE_REC << 8)} , asEntryDesc0x1601 , aName0x1601 , &RxPDO2PP0x1601 , NULL , NULL , 0x0000 },
 /* Object 0x1602 */
 {NULL , NULL ,  0x1602 , {DEFTYPE_PDOMAPPING , 2 | (OBJCODE_REC << 8)} , asEntryDesc0x1602 , aName0x1602 , &RxPDO3PT0x1602 , NULL , NULL , 0x0000 },
 /* Object 0x1A00 */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x1A00,{DEFTYPE_PDOMAPPING,14|(OBJCODE_REC<<8)},asEntryDesc0x1A00,aName0x1A00,&TxPDO1CSPCSV0x1A00,NULL,NULL,0},
+#else
 {NULL , NULL ,  0x1A00 , {DEFTYPE_PDOMAPPING , 13 | (OBJCODE_REC << 8)} , asEntryDesc0x1A00 , aName0x1A00 , &TxPDO1CSPCSV0x1A00 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x1A01 */
 {NULL , NULL ,  0x1A01 , {DEFTYPE_PDOMAPPING , 7 | (OBJCODE_REC << 8)} , asEntryDesc0x1A01 , aName0x1A01 , &TxPDO2PP0x1A01 , NULL , NULL , 0x0000 },
 /* Object 0x1A02 */
@@ -4024,7 +4228,9 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x205E */
 {NULL , NULL ,  0x205E , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x205E , aName0x205E , &FaultReaction_Test0x205E , NULL , NULL , 0x0000 },
 /* Object 0x2100 */
+#if !FPGA_C20_PROFILE
 {NULL , NULL ,  0x2100 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2100 , aName0x2100 , &Pos_Loop_Kp0x2100 , ECAT_Read_0x2100_Callback , ECAT_Write_0x2100_Callback , 0x0000 },
+#endif
 /* Object 0x2200 */
 {NULL , NULL ,  0x2200 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2200 , aName0x2200 , &status_code0x2200 , NULL , NULL , 0x0000 },
 /* Object 0x2201 */
@@ -4052,7 +4258,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 #endif
 
 /* Object 0x2300 */
+#if FPGA_C20_PROFILE
+QEC_OBJECTS
+#else
 {NULL , NULL ,  0x2300 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2300 , aName0x2300 , &Cur_Loop_IqKp0x2300 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x2301 */
 {NULL , NULL ,  0x2301 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x2301 , aName0x2301 , &Cur_Loop_IqKi0x2301 , NULL , NULL , 0x0000 },
 /* Object 0x2302 */
@@ -4078,7 +4288,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x605E */
 {NULL , NULL ,  0x605E , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x605E , aName0x605E , &FaultReactionOptionCode0x605E , NULL , NULL , 0x0000 },
 /* Object 0x6060 */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x6060,{DEFTYPE_INTEGER8,0|(OBJCODE_VAR<<8)},&sEntryDesc0x6060,aName0x6060,&Modes_of_operation0x6060,ECAT_Read_QEC_Callback,ECAT_Write_QEC_Callback,0},
+#else
 {NULL , NULL ,  0x6060 , {DEFTYPE_INTEGER8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6060 , aName0x6060 , &Modes_of_operation0x6060 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x6061 */
 {NULL , NULL ,  0x6061 , {DEFTYPE_INTEGER8 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6061 , aName0x6061 , &Modes_of_operation_display0x6061 , NULL , NULL , 0x0000 },
 /* Object 0x6062 */
@@ -4086,7 +4300,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x6063 */
 {NULL , NULL ,  0x6063 , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6063 , aName0x6063 , &Position_actual_value_inc0x6063 , NULL , NULL , 0x0000 },
 /* Object 0x6064 */
+#if FPGA_C20_PROFILE
+{NULL , NULL ,  0x6064 , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6064 , aName0x6064 , &Position_actual_value0x6064 , ECAT_Read_QEC_Callback , NULL , 0x0000 },
+#else
 {NULL , NULL ,  0x6064 , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6064 , aName0x6064 , &Position_actual_value0x6064 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x6065 */
 {NULL , NULL ,  0x6065 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6065 , aName0x6065 , &Following_error_window0x6065 , NULL , NULL , 0x0000 },
 /* Object 0x6066 */
@@ -4098,7 +4316,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x606B */
 {NULL , NULL ,  0x606B , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606B , aName0x606B , &Velocity_demand_value0x606B , NULL , NULL , 0x0000 },
 /* Object 0x606C */
+#if FPGA_C20_PROFILE
+{NULL , NULL ,  0x606C , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606C , aName0x606C , &Velocity_actual_value0x606C , ECAT_Read_QEC_Callback , NULL , 0x0000 },
+#else
 {NULL , NULL ,  0x606C , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606C , aName0x606C , &Velocity_actual_value0x606C , SIMULATION_606C_READ_CALLBACK , NULL , 0x0000 },
+#endif
 /* Object 0x606D */
 {NULL , NULL ,  0x606D , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x606D , aName0x606D , &Velocity_window0x606D , NULL , NULL , 0x0000 },
 /* Object 0x606E */
@@ -4108,7 +4330,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x6070 */
 {NULL , NULL ,  0x6070 , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6070 , aName0x6070 , &Velocity_threshold_time0x6070 , NULL , NULL , 0x0000 },
 /* Object 0x6071 */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x6071,{DEFTYPE_INTEGER16,0|(OBJCODE_VAR<<8)},&sEntryDesc0x6071,aName0x6071,&Target_torque0x6071,ECAT_Read_QEC_Callback,ECAT_Write_QEC_Callback,0},
+#else
 {NULL , NULL ,  0x6071 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6071 , aName0x6071 , &Target_torque0x6071 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x6072 */
 {NULL , NULL ,  0x6072 , {DEFTYPE_UNSIGNED16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6072 , aName0x6072 , &Max_torque0x6072 , NULL , NULL , 0x0000 },
 /* Object 0x6073 */
@@ -4120,13 +4346,21 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x6076 */
 {NULL , NULL ,  0x6076 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6076 , aName0x6076 , &Motor_rated_torque0x6076 , NULL , NULL , 0x0000 },
 /* Object 0x6077 */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x6077,{DEFTYPE_INTEGER16,0|(OBJCODE_VAR<<8)},&sEntryDesc0x6077,aName0x6077,&Torque_actual_value0x6077,ECAT_Read_QEC_Callback,NULL,0},
+#else
 {NULL , NULL ,  0x6077 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6077 , aName0x6077 , &Torque_actual_value0x6077 , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x6078 */
 {NULL , NULL ,  0x6078 , {DEFTYPE_INTEGER16 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6078 , aName0x6078 , &Current_actual_value0x6078 , NULL , NULL , 0x0000 },
 /* Object 0x6079 */
 {NULL , NULL ,  0x6079 , {DEFTYPE_UNSIGNED32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x6079 , aName0x6079 , &DC_link_circuit_voltage0x6079 , NULL , NULL , 0x0000 },
 /* Object 0x607A */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x607A,{DEFTYPE_INTEGER32,0|(OBJCODE_VAR<<8)},&sEntryDesc0x607A,aName0x607A,&Target_position0x607A,ECAT_Read_QEC_Callback,ECAT_Write_QEC_Callback,0},
+#else
 {NULL , NULL ,  0x607A , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x607A , aName0x607A , &Target_position0x607A , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x607B */
 {NULL , NULL ,  0x607B , {DEFTYPE_RECORD , 2 | (OBJCODE_REC << 8)} , asEntryDesc0x607B , aName0x607B , &Position_range_limit0x607B , NULL , NULL , 0x0000 },
 /* Object 0x607D */
@@ -4172,7 +4406,11 @@ TOBJECT    OBJMEM ApplicationObjDic[] = {
 /* Object 0x60FE */
 {NULL , NULL ,  0x60FE , {DEFTYPE_RECORD , 2 | (OBJCODE_REC << 8)} , asEntryDesc0x60FE , aName0x60FE , &Digital_outputs0x60FE , NULL , NULL , 0x0000 },
 /* Object 0x60FF */
+#if FPGA_C20_PROFILE
+{NULL,NULL,0x60FF,{DEFTYPE_INTEGER32,0|(OBJCODE_VAR<<8)},&sEntryDesc0x60FF,aName0x60FF,&Target_velocity0x60FF,ECAT_Read_QEC_Callback,ECAT_Write_QEC_Callback,0},
+#else
 {NULL , NULL ,  0x60FF , {DEFTYPE_INTEGER32 , 0 | (OBJCODE_VAR << 8)} , &sEntryDesc0x60FF , aName0x60FF , &Target_velocity0x60FF , NULL , NULL , 0x0000 },
+#endif
 /* Object 0x7000 */
 {NULL , NULL ,  0x7000 , {DEFTYPE_RECORD , 12 | (OBJCODE_REC << 8)} , asEntryDesc0x7000 , aName0x7000 , &OUT_GENERIC0x7000 , NULL , NULL , 0x0000 },
 /* Object 0x7010 */

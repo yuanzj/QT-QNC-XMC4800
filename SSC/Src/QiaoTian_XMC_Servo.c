@@ -33,6 +33,10 @@ extern void SimulatedSlave_Tick(void);
 #define _QIAO_TIAN__XMC__SERVO_ 1
 #include "QiaoTian_XMC_Servo.h"
 #undef _QIAO_TIAN__XMC__SERVO_
+#if FPGA_C20_PROFILE
+#include "qiaotian_protocol.inc"
+#include "Simulation/ethercat_adapter.h"
+#endif
 /*--------------------------------------------------------------------------------------
 ------
 ------    local types and defines
@@ -447,6 +451,10 @@ UINT8 ECAT_Read_0x2214_Callback(UINT16 index, UINT8 subindex, UINT32 dataSize, U
 
 void APPL_InputMapping(UINT16* pData)
 {
+#if FPGA_C20_PROFILE
+    qec_pack((uint8_t *)pData);
+#else
+
     /* 显式物理映射：INT64=44B，legacy=40B，场景7负例=36B。 */
     UINT8 *p = (UINT8 *)pData;
     UINT16 statusword = Statusword0x6041;
@@ -510,6 +518,7 @@ void APPL_InputMapping(UINT16* pData)
     p[32] = 0; p[33] = 0; p[34] = 0; p[35] = 0;
 #if SIMULATION_TX_PDO_BYTES == 40
     p[36] = 0; p[37] = 0; p[38] = 0; p[39] = 0;
+#endif
 #endif
 #endif
 }
@@ -579,6 +588,16 @@ void APPL_InputMapping_New(UINT16* pData)
 *////////////////////////////////////////////////////////////////////////////////////////
 void APPL_OutputMapping(UINT16* pData)
 {
+#if FPGA_C20_PROFILE
+    const uint8_t *p=(const uint8_t *)pData;
+    Controlword0x6040=(UINT16)qec_get(p,2U);
+    /* 基础目标只记录；当前配套的运动执行仍由受控整串工艺完成。 */
+    qec_target_position=(int32_t)(UINT32)qec_get(p+2,4U);
+    qec_target_velocity=(int32_t)(UINT32)qec_get(p+6,4U);
+    qec_target_torque=(int16_t)(UINT16)qec_get(p+10,2U);qec_requested_mode=(int8_t)p[12];
+    controller_status0x2001=(UINT32)qec_get(p+13,4U);
+#else
+
     /* RxPDO 12 B —— docx 表 4-2 主口径（C 方案）：
      *   0x00 0x2001:00 controller_status UINT32（主站→从站的控制器状态）
      *   0x04 备用 U32（PDO 填充）
@@ -593,6 +612,7 @@ void APPL_OutputMapping(UINT16* pData)
                               ((UINT32)p[2] << 16) |
                               ((UINT32)p[3] << 24);
     /* p[4..11]：备用 U32 ×2，忽略 */
+#endif
 }
 
 
@@ -1157,6 +1177,28 @@ UINT8 App_Link_IsOperational(void)
     }
     return 1u;
 }
+
+#if FPGA_C20_PROFILE
+void App_Storage_Poll(uint32_t now)
+{
+    uint32_t irq=__get_PRIMASK();
+    __disable_irq();
+    (void)now; /* Poll scheduling time must not be used as execution time. */
+    uint32_t running_ms=Simulation_GetRunningMilliseconds();
+    bool busy=Pset_IsRunning()!=0U;
+    if(qec_maintenance_busy || App_JobCtrl_GetControl()){__set_PRIMASK(irq);return;}
+    if(busy){__set_PRIMASK(irq);QEC_NvmPoll(running_ms,true);return;}
+    qec_maintenance_busy=true;
+    __set_PRIMASK(irq);
+    QEC_NvmPoll(running_ms,false);
+    qec_maintenance_busy=false;
+}
+
+UINT8 App_Run_IsPermitted(void)
+{
+    return QEC_RunPermitted(Controlword0x6040, &status_code0x2200) && !qec_maintenance_busy;
+}
+#endif
 
 void APPL_Application(void)
 {

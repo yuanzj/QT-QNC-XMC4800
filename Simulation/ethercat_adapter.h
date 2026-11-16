@@ -34,5 +34,11 @@ extern volatile SimulationSdoCommitDiagnostics Simulation_SdoCommitDiagnostics;
 void Simulation_Tick(void);
 void Simulation_Receive(uint16_t length);
 uint8_t Simulation_IsRunning(void);
+#if FPGA_C20_PROFILE
+/* Monotonic modulo-2^32 execution milliseconds, independent of main-loop polls. */
+uint32_t Simulation_GetRunningMilliseconds(void);
+#endif
+/* Includes the original plant's braking tail; maintenance must wait for zero speed. */
+uint8_t Simulation_IsBusy(void);
 uint32_t Simulation_Crc32(const uint8_t *bytes, uint16_t length);
 #endif

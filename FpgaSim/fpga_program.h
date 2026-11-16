@@ -73,6 +73,11 @@ typedef struct {
     uint8_t search_attempt, search_waiting, loosen_armed;
     uint16_t failure_jumps_taken;
     uint8_t origin_hold;
+#if FPGA_C20_PROFILE
+    /* Observation only: RUNNING milliseconds consumed by the last Tick call.
+     * Never read by plant/control/quality logic; at most 1000 per bounded call. */
+    uint16_t observed_running_ms;
+#endif
 #endif
 } FpgaProgramRun;
 

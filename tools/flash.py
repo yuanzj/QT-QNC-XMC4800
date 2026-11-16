@@ -39,6 +39,11 @@ def record(address, kind, data):
     row = bytes([len(data), address >> 8, address & 255, kind]) + data
     return ':' + (row + bytes([(-sum(row)) & 255])).hex().upper()
 
+def validate_image(memory, paired):
+    """固件不得占用配套日志及SII；整扇区保全文件另按备份核对。"""
+    if paired and any(BASE + 0x4000 <= address < BASE + 0x20000 for address in memory):
+        raise ValueError('C20配套固件覆盖预留日志或SII区域')
+
 def write_preserved_hex(path, image):
     lines = []
     # XMC4800前四个16KiB扇区及0x20000起的128KiB应用扇区；跳过64KiB EEPROM。
@@ -71,6 +76,7 @@ def main():
         path = (build / 'source' / name).resolve()
         if not path.is_relative_to(build / 'source') or sha(path) != expected: raise ValueError('构建快照变化')
     memory = read_hex(build / 'xmc4800.hex')
+    validate_image(memory, manifest.get('protocol') in ('qiaotian-20261109', 'qiaotian-20261116'))
     evidence.mkdir(parents=True)
     (evidence / 'plan.json').write_text(json.dumps({'serial': args.serial, 'device': 'XMC4800-2048',
         'image_bytes': len(memory), 'sii_written': False, 'sector_holes_preserved': True,
@@ -100,6 +106,7 @@ def main():
     after = (evidence / 'after.bin').read_bytes()
     passed = after == expected
     result = {'full_readback_matches': passed, 'sii_preserved': after[0x10000:0x20000] == before[0x10000:0x20000],
+              'nvm_preserved': after[0x4000:0xC000] == before[0x4000:0xC000],
               'image_bytes': len(memory), 'before_sha256': sha(evidence / 'before.bin'),
               'after_sha256': sha(evidence / 'after.bin'), 'cpu_running': False}
     (evidence / 'result.json').write_text(json.dumps(result, indent=2), encoding='utf-8')

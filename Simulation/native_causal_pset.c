@@ -7,17 +7,26 @@ static uint16_t u16(const uint8_t *p){return (uint16_t)(p[0]|((uint16_t)p[1]<<8)
 static uint32_t u32(const uint8_t *p){return p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);}
 /* 现行UIO模式3逐字节保留HMI 96B工步。这里只接入独立模型实际执行的语义，
  * 不把未实现的普通工步交替方向静默丢弃。 */
+static uint8_t identify_header(uint8_t action, uint32_t timeout)
+{
+#if FPGA_C20_PROFILE
+    return (action == 0U && timeout == 0U) ||
+           (action >= 1U && action <= 3U && timeout <= 60000U);
+#else
+    return action == 0U && timeout == 0U;
+#endif
+}
 static uint8_t hmi_step(const uint8_t *s,uint8_t seq,uint8_t count,FpgaProgramStep *step)
 {
     uint32_t v[18];unsigned i,used;
     uint8_t action=s[23]&0x0fu,jump=s[23]>>4;
     for(i=0;i<18;i++)v[i]=u32(s+24+4*i);
     if(s[20]!=seq||s[22]<1||s[22]>(s[21]==1?4:2)||
-       (s[21]==1?action!=0:(action<1||action>3))||
+       (s[21]==1?!identify_header(action,u32(s+12)):(action<1||action>3))||
        (action==3?(jump==0||jump>count||jump==seq):jump!=0)||
        !u32(s)||u32(s)>FPGA_MODEL_MAX_RPM_MILLI/100U||
        u32(s+4)>60000||u32(s+8)>60000||
-       (s[21]==1?u32(s+12)!=0:(!u32(s+12)||u32(s+12)>60000))||u32(s+16)>60000)return 0;
+       (s[21]!=1&&(!u32(s+12)||u32(s+12)>60000))||u32(s+16)>60000)return 0;
     step->direction=(uint8_t)(s[22]-1);step->failure_action=action;step->failure_jump_step=jump;
     step->speed_rpm_milli=u32(s)*100U;step->accel_time_ms=(uint16_t)u32(s+4);
     step->decel_time_ms=(uint16_t)u32(s+8);
@@ -30,6 +39,10 @@ static uint8_t hmi_step(const uint8_t *s,uint8_t seq,uint8_t count,FpgaProgramSt
         /* 认帽低力保护与DC-08次数耗尽失败；不采用“次数到即OK”。 */
         step->max_torque_mnm=(int32_t)(v[0]*6U/5U);step->max_angle_cdeg=307199;
         step->engage_repeat_delay_ms=v[2];step->engage_repeat_count=(uint8_t)v[3];step->failure_action=2;
+#if FPGA_C20_PROFILE
+        /* Current UIO carries the explicit failure action; legacy header 0 means stop. */
+        if(action)step->failure_action=action;
+#endif
     }else if(s[21]==3){
         used=15;
         if(v[0]>3||v[10]>30000||v[11]>1||v[12]>1||v[13]>1||v[14]>1)return 0;

@@ -1,6 +1,14 @@
 /* 场景9为参数驱动+独立合成接头；0~8保留为明确的协议测试向量。 */
 #ifndef SIMULATION_MODEL_CONFIG_H
 #define SIMULATION_MODEL_CONFIG_H
+/* C20-compatible EtherCAT/SDO sidecar, independent joint engine unchanged. */
+#ifndef FPGA_C20_PROFILE
+#define FPGA_C20_PROFILE 0
+#endif
+#if FPGA_C20_PROFILE != 0 && FPGA_C20_PROFILE != 1
+#error FPGA_C20_PROFILE must be 0 or 1
+#endif
+#define XMC_QIAOTIAN_20261109 FPGA_C20_PROFILE
 #ifndef FPGA_SIM_SCENARIO
 #define FPGA_SIM_SCENARIO 9
 #endif
@@ -58,6 +66,9 @@
 #endif
 #if FPGA_TEST_SDO_COMMIT_TRACE && (FPGA_SIM_SCENARIO != 9 || !FPGA_SIM_INT64 || !FPGA_MODEL_IDENTITY_VALID || FPGA_TEST_POSITION_VECTOR || FPGA_TEST_TRUNCATE_TXPDO_TAIL)
 #error SDO commit trace requires the normal independent scenario 9 INT64 simulation profile
+#endif
+#if FPGA_C20_PROFILE && (FPGA_SIM_SCENARIO != 9 || !FPGA_SIM_INT64 || FPGA_TEST_TRUNCATE_TXPDO_TAIL || FPGA_TEST_POSITION_VECTOR)
+#error C20 profile requires independent joint, INT64 and normal physical mapping
 #endif
 #if FPGA_SIM_INT64
 #define FPGA_MODEL_SPEC_CODE 0 /* 未分配正式码，不能把历史模拟值1冒充正式型号。 */

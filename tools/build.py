@@ -20,7 +20,9 @@ def main():
                         help='逻辑模拟：0正常/1扭矩NOK/2角度NOK/3超时/4同拍故障/5位置边界/6提前20ms故障/7错误36B-TxPDO/8原始整数极值/9独立合成接头；不修改UIO')
     parser.add_argument('--joint', choices=['hard','soft','free-run','jam'], default='hard', help='场景9独立合成夹具，不是实物标定数据')
     parser.add_argument('--velocity', choices=['legacy', 'int64'], default=None,
-                        help='场景9默认int64/44B/1000rpm；其他场景默认legacy/40B/500rpm')
+                        help='场景9默认INT64/1000rpm；物理长度由protocol选择；其他场景默认legacy/40B/500rpm')
+    parser.add_argument('--protocol', choices=['legacy', 'qiaotian-20261116'], default=None,
+                        help='场景9/INT64默认适配当前UIO的17/46B；legacy保留原12/44B或12/40B')
     parser.add_argument('--model', choices=['simulation','unknown'], default='simulation',
                         help='INT64模式型号信息：SIM-QNC30显式模拟或全零未知；不分配正式型号代码')
     parser.add_argument('--negative-pdo-tail', action='store_true',
@@ -38,12 +40,20 @@ def main():
         parser.error('位置故障向量必须保留场景9、INT64、simulation型号和正常PDO长度')
     if args.sdo_commit_trace and (args.scenario != 9 or not int64 or args.model != 'simulation' or args.negative_pdo_tail or args.position_test_vector != 'off'):
         parser.error('SDO提交计数仅用于正常场景9、INT64、simulation型号；不混合故障向量')
+    protocol = args.protocol or ('qiaotian-20261116' if int64 and args.scenario == 9 else 'legacy')
+    paired = protocol == 'qiaotian-20261116'
+    if paired and (not int64 or args.scenario != 9 or args.model != 'simulation' or args.negative_pdo_tail or args.position_test_vector != 'off'):
+        parser.error('C21配套仅用于正常场景9/INT64/simulation；负例或未知型号请显式选择legacy')
     gcc = Path(args.gcc).resolve()
     out = Path(args.output).resolve()
     if out.exists(): raise SystemExit('输出已存在，拒绝覆盖')
     out.mkdir(parents=True)
     source = out / 'source'
     shutil.copytree(ROOT, source, ignore=shutil.ignore_patterns('.git', 'build', 'evidence', 'Debug', 'Release', '__pycache__'))
+    if paired:
+        from c20_profile import apply_profile6, apply_qiaotian
+        apply_profile6(source)
+        apply_qiaotian(source)
     recipe = json.loads((source / 'tools/source-list.json').read_text(encoding='utf-8'))
     objects = recipe['objects']
     assert len(objects) == len(set(objects))
@@ -56,6 +66,9 @@ def main():
              '-DFPGA_TEST_TRUNCATE_TXPDO_TAIL=' + str(int(args.negative_pdo_tail)),
              '-DFPGA_TEST_POSITION_VECTOR=' + str(['off','forward-wrap','reverse-wrap','step-reset'].index(args.position_test_vector)),
              '-DFPGA_SIM_INT64=' + str(int(int64)), '-DFPGA_MODEL_IDENTITY_VALID=' + str(int(args.model == 'simulation')), '-DFPGA_MODEL_PROFILE=' + str(['hard','soft','free-run','jam'].index(args.joint)+1), '-fstack-usage', '-Os', '-g3', '-ffunction-sections', '-fdata-sections', '-Wall', *arch]
+    flags.append('-DFPGA_C20_PROFILE=' + str(int(paired)))
+    if paired:
+        flags.append('-DREVISION_NUMBER=0x060B0901')
     flags += ['-I' + str(source / name) for name in includes]
     commands = []
     for name in objects:
@@ -83,8 +96,13 @@ def main():
         suffix = '.exe' if gcc.suffix == '.exe' else ''
         subprocess.run([str(gcc.parent / ('arm-none-eabi-objcopy' + suffix)), '-O', 'ihex',
                         'xmc4800.elf', 'xmc4800.hex'], cwd=out, stdout=log, stderr=subprocess.STDOUT, check=True)
+    from flash import read_hex, validate_image
+    validate_image(read_hex(out / 'xmc4800.hex'), paired)
     inputs = {p.relative_to(source).as_posix(): sha(p) for p in sorted(source.rglob('*')) if p.is_file()}
     manifest = {'device': 'XMC4800-2048', 'example': 'expert-logic-model-v2', 'scenario': args.scenario, 'inputs': inputs,
+                'protocol': protocol, 'paired_id': '0x20261116' if paired else None,
+                'rx_pdo_bytes': 17 if paired else 12,
+                'nvm_reserved': ['0x0C004000', '0x0C00C000'] if paired else None,
                 'feedback_source': 'synthetic-independent-joint' if args.scenario==9 else 'synthetic-protocol-vector',
                 'position_test_vector': args.position_test_vector,
                 'sdo_commit_trace': args.sdo_commit_trace,
@@ -94,9 +112,9 @@ def main():
                 'tool_model': 'SIM-QNC30' if int64 and args.model == 'simulation' else None,
                 'tool_model_source': 3 if int64 and args.model == 'simulation' else 0,
                 'official_model_code_assigned': False,
-                'velocity_bits': 64 if int64 else 32, 'tx_pdo_bytes': 36 if args.negative_pdo_tail else (44 if int64 else (36 if args.scenario==7 else 40)),
+                'velocity_bits': 64 if int64 else 32, 'tx_pdo_bytes': 46 if paired else (36 if args.negative_pdo_tail else (44 if int64 else (36 if args.scenario==7 else 40))),
                 'test_only_negative_mapping': args.negative_pdo_tail, 'negative_pdo_tail_bytes': 8 if args.negative_pdo_tail else 0,
-                'velocity_object': '0x2212:00' if int64 else '0x606C:00',
+                'velocity_object': '0x2F00:04' if paired else ('0x2212:00' if int64 else '0x606C:00'),
                 'required_uio_pdo_map_ver': 4 if int64 else None,
                 'max_speed_rpm': 1000 if int64 else 500,
                 'compiler': subprocess.check_output([str(gcc), '--version'], text=True).splitlines()[0],

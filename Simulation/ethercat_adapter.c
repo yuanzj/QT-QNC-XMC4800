@@ -2,6 +2,10 @@
 #include "ethercat_adapter.h"
 #include "native_pset.h"
 #include <limits.h>
+#if FPGA_C20_PROFILE
+#include "c20_profile.h"
+#include "../SSC/Src/qiaotian_nvm.h"
+#endif
 #if FPGA_TEST_POSITION_VECTOR
 #include "position_test_vector.h"
 #endif
@@ -33,6 +37,12 @@ static volatile uint8_t received;
 static uint8_t valid_task;
 static uint8_t clock_started;
 static uint32_t last_ms;
+#if FPGA_C20_PROFILE
+static uint32_t cycle_ended_ms;
+static uint8_t cycle_ended;
+/* ISR-owned cumulative execution time; RESET/reload never resets this counter. */
+static volatile uint32_t running_milliseconds;
+#endif
 #if FPGA_SIM_SCENARIO == 9
 static uint32_t entry_fault_published_ms;
 static uint8_t completed_step;
@@ -96,6 +106,27 @@ uint8_t Simulation_IsRunning(void)
     return simulator.state == FPGA_SIM_RUNNING;
 }
 
+#if FPGA_C20_PROFILE
+uint32_t Simulation_GetRunningMilliseconds(void)
+{
+    return running_milliseconds;
+}
+#endif
+
+uint8_t Simulation_IsBusy(void)
+{
+#if FPGA_C20_PROFILE
+    /* Let the original terminal sample window be observed before flash blocks IRQs. */
+    if(cycle_ended && (uint32_t)(HW_GetTimer()-cycle_ended_ms)<FPGA_STEP_RESULT_WINDOW_MS)
+        return 1;
+#endif
+#if FPGA_SIM_SCENARIO == 9
+    return Simulation_IsRunning() || simulator.plant.velocity_rpm_milli != 0;
+#else
+    return Simulation_IsRunning();
+#endif
+}
+
 uint32_t Simulation_Crc32(const uint8_t *bytes, uint16_t length)
 {
     uint32_t crc = 0xFFFFFFFFu;
@@ -153,6 +184,10 @@ void Simulation_Tick(void)
     uint8_t command;
     uint8_t permitted;
     uint32_t state_before;
+#if FPGA_C20_PROFILE
+    uint8_t cycle_pset;
+    uint32_t elapsed=clock_started ? now-last_ms : 0U;
+#endif
 #if FPGA_SIM_SCENARIO == 9
     uint8_t terminal_step;
 #endif
@@ -166,8 +201,14 @@ void Simulation_Tick(void)
         load_task();
     }
     permitted = App_Link_IsOperational() && ((controller_status0x2001 & 3u) == 0);
+#if FPGA_C20_PROFILE
+    permitted = App_Run_IsPermitted() && permitted;
+#endif
     command = App_JobCtrl_GetControl();
     state_before = simulator.state;
+#if FPGA_C20_PROFILE
+    cycle_pset = simulator.program.pset_no;
+#endif
     if (command) App_JobCtrl_SetControl(0);
     if (command == 3) {
         reset_task();
@@ -175,8 +216,15 @@ void Simulation_Tick(void)
         FpgaProgram_Stop(&simulator);
     } else if (command == 1) {
         if (!valid_task || simulator.program.count == 0 || App_JobCtrl_GetPsetNo() != simulator.program.pset_no ||
-            !FpgaProgram_Start(&simulator, now, permitted)) status_code0x2200 = 1;
-        else status_code0x2200 = 0;
+            !FpgaProgram_Start(&simulator, now, permitted)) {
+#if FPGA_C20_PROFILE
+            /* Preserve the storage rejection reason instead of generic parameter error. */
+            uint32_t reason=QEC_NvmRunStatus();
+            status_code0x2200=reason ? reason : 1U;
+#else
+            status_code0x2200=1;
+#endif
+        } else status_code0x2200 = 0;
     } else if (command != 0) {
         status_code0x2200 = 1;
     }
@@ -184,7 +232,21 @@ void Simulation_Tick(void)
     terminal_step = simulator.state == FPGA_SIM_RUNNING ? simulator.current_step : 0;
 #endif
     FpgaProgram_Tick(&simulator, now, permitted);
+#if FPGA_C20_PROFILE
+    if(state_before == FPGA_SIM_RUNNING && elapsed<=1000U){
+        /* STOP/RESET are accepted at this sample: retain the preceding interval.
+         * Otherwise use the actual RUNNING sub-ticks, excluding both DONE and
+         * FAULT tails even when one call catches up many milliseconds. */
+        running_milliseconds+=(command == 2U || command == 3U)
+                              ? elapsed : simulator.observed_running_ms;
+    }
+#endif
     if (simulator.state == FPGA_SIM_FAULT) status_code0x2200 = simulator.fault_code;
+#if FPGA_C20_PROFILE
+    /* RESET/load cannot hide storage failure; active revocation keeps its precise cause. */
+    if (QEC_NvmRunStatus()) status_code0x2200=QEC_NvmRunStatus();
+    (void)App_Run_IsPermitted();
+#endif
 #if FPGA_SIM_SCENARIO == 9
     if (simulator.state == FPGA_SIM_DONE) {
         if (terminal_step != 0) completed_step = terminal_step;
@@ -222,7 +284,14 @@ void Simulation_Tick(void)
         pset_echo0x220B = finished ? (uint16_t)((uint16_t)simulator.program.pset_no << 8) : 0;
         step_echo0x220C = 0;
     }
+#if FPGA_C20_PROFILE
+    /* C21 publishes the independent last step; the original model keeps chain result.
+     * close_step has already finalized step_nok_reason before entering DONE. */
+    step_result0x220D = simulator.state == FPGA_SIM_DONE
+                       ? (uint8_t)(simulator.step_nok_reason == 0U) : simulator.result;
+#else
     step_result0x220D = simulator.result;
+#endif
     Torque_actual_value0x6077 = simulator.torque_raw;
     Position_actual_value0x6064 = simulator.position_inc;
 #if FPGA_TEST_POSITION_VECTOR
@@ -235,6 +304,14 @@ void Simulation_Tick(void)
     if (Velocity_606C_valid0x2213) Velocity_actual_value0x606C = (int32_t)simulator.velocity_inc_s;
 #else
     Velocity_actual_value0x606C = simulator.velocity_inc_s;
+#endif
+#if FPGA_C20_PROFILE
+    if (state_before == FPGA_SIM_RUNNING && simulator.state != FPGA_SIM_RUNNING) {
+        cycle_ended=1;
+        cycle_ended_ms=now;
+        QEC_NvmCycle(simulator.state == FPGA_SIM_DONE && simulator.result != 0U,
+                     cycle_pset);
+    }
 #endif
     trace_control(now, command, state_before, permitted);
 }

@@ -140,6 +140,15 @@ void process_app(TOBJ7000 *OUT_GENERIC, TOBJ6000 *IN_GENERIC)
 /* Timer frequency (Hz) */
 #define TICKS_PER_SECOND (1000)
 
+#include "Simulation/model_config.h"
+#if FPGA_C20_PROFILE
+#include "SSC/Src/qiaotian_nvm.h"
+#include "DOCH_cyclic_sync_position.h"
+#include "Simulation/c20_profile.h"
+#include "Simulation/ethercat_adapter.h"
+extern uint32_t HW_GetTimer(void);
+#endif
+
 int main(void)
 {
   DAVE_STATUS_t status;
@@ -153,6 +162,9 @@ int main(void)
 
   /*Create basic mapping*/
 //  APPL_GenerateMapping(&nPdInputSize,&nPdOutputSize);
+#if FPGA_C20_PROFILE
+  QEC_NvmInit(Simulation_GetRunningMilliseconds());
+#endif
   bRunApplication = TRUE;
 
   //Debug Micrium uc/probe Scope
@@ -176,6 +188,9 @@ int main(void)
   while(1U)
   {
     MainLoop();
+#if FPGA_C20_PROFILE
+    App_Storage_Poll(HW_GetTimer());
+#endif
   }
 }
 

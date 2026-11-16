@@ -1,0 +1,46 @@
+{
+  "upstream_commit": "09f164377a0c0a9a5811c0e8e55baa3520dea972",
+  "scope": "XMC4800 interface and NVM only; RT1176/UIO unchanged",
+  "imported_sha256": {
+    "qiaotian_od.h": "ace0c643d4ba682af7e8727c95a13dc77829776f6a12d059392d16fe76a65de7",
+    "qiaotian_nvm.h": "700c203c100e88d351793e44e2dae84cf3b28060d3055a63e01c80c15818e7d2",
+    "qiaotian_nvm.inc": "ae9040836d06a8c8011fef4a7e6e89df69dc2cbbab495151f0970b58655624f8",
+    "qiaotian_protocol.inc": "550d6f1d4624b295dca8e25ae0a2c6883cc40971e8d6a614104cc0d39bca0f63",
+    "tools/xmc4800/profile.py": "5f2f110cdf6b978de09ae898df9146ec70bba98fc92f0e1c1f4670d57e25341d"
+  },
+  "feedback_model": "Original independent plant and quality/control rules retained; C21 adds per-call RUNNING tick observation only, verified against the SHA-locked pre-observation executor",
+  "compatibility_commit": "e4f30784e977404362f4911d76de2e132707b575",
+  "paired_id": "0x20261116",
+  "upstream_read_only_reference": {
+    "firmware/rt1176/cores/cm7/ethercat/ethercat_qiaotian_paired.h": "573c99acd168f751506b0e555a3a6f3f497623db2f7f4d569f452494c5a58200",
+    "firmware/rt1176/cores/cm7/hmi/uio_hmi_cycle_events.c": "0a30531b62618a87e8226fdb1ba9b34ee26cd6d3bbcb6ce439f7affed32b5a04",
+    "firmware/xmc4800/ethercat/qiaotian_nvm.h": "58a189c053f65b4341e19540468dae66ef76fc5b34dc83f92ee0f959f8c08f65",
+    "firmware/xmc4800/ethercat/qiaotian_nvm.inc": "a09ecf8c2862f65f64f8651caa46ee030e226f3d3e49aaf92588f004965c4770"
+  },
+  "preserved_model_sha256": {
+    "FpgaSim/feedback_model.c": "a1717480c2615c30f2adffda8c2067a21762029b4f770953df3358fff104bc99",
+    "FpgaSim/feedback_model.h": "03ef8d4c5eeee0cc11100267f4c45b49e9f916a24a10415d9cd8145b026e3fcf",
+    "FpgaSim/fpga_program.c": "35238489cb5a88296a52192ade114ad8c67e8cd39831dfa5a268701a2580b66c",
+    "Simulation/native_causal_pset.c": "5bc122400119353a28f46ec32626fcda6aa6aab249e8c6c8b8fddb06a1d1fa1d"
+  },
+  "local_storage_adaptation": "Returned flash errors latch status 4; NVM init/poll consume adapter execution-time snapshots; persistent on-flash layout unchanged",
+  "pre_timing_observation_sha256": {
+    "FpgaSim/feedback_model.c": "a1717480c2615c30f2adffda8c2067a21762029b4f770953df3358fff104bc99",
+    "FpgaSim/feedback_model.h": "03ef8d4c5eeee0cc11100267f4c45b49e9f916a24a10415d9cd8145b026e3fcf",
+    "FpgaSim/fpga_control_model.c": "78f15abe04462f0a7b866978f047ffdf74796b14144dff197466c0352a2c475f",
+    "FpgaSim/fpga_program.c": "35238489cb5a88296a52192ade114ad8c67e8cd39831dfa5a268701a2580b66c",
+    "Simulation/native_causal_pset.c": "5bc122400119353a28f46ec32626fcda6aa6aab249e8c6c8b8fddb06a1d1fa1d",
+    "FpgaSim/fpga_program.h": "7a72bb5017abd48febfca401965983f733b6480786604b92eef2a8ae47b8bdc8"
+  },
+  "runtime_observation": {
+    "files": [
+      "FpgaSim/fpga_control_model.c",
+      "FpgaSim/fpga_program.h"
+    ],
+    "scope": "C21-only per-call RUNNING tick observation; original control statements unchanged; reconstructed baseline hash checked in host verification",
+    "current_sha256": {
+      "FpgaSim/fpga_control_model.c": "df182a804465d2c537df34f59ae16dd1ba59ddba58d8ff0178c6af0b7bc69f38",
+      "FpgaSim/fpga_program.h": "158674d7825539a3643c4197755cb60bb6776b4d8d685e0720441c000bcb71a2"
+    }
+  }
+}
